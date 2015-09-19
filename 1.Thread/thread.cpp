@@ -284,19 +284,19 @@ unsigned int myrand(int max)
 unsigned int getSeat()
 {
 	unsigned int seat = 0;
-
+	WaitForSingleObject(seatmutex, INFINITE);
 	while (TRUE)
 	{
 		seat = myrand(SEAT_MAX);
-		WaitForSingleObject(seatmutex, INFINITE);
+		
 		if (!seatArray[seat])
 		{
 			seatArray[seat] = TRUE;
 			break;
 		}
-		ReleaseMutex(seatmutex);
+	
 	}
-
+	ReleaseMutex(seatmutex);
 	return seat;
 }
 
