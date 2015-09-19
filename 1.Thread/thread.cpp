@@ -144,7 +144,7 @@ unsigned WINAPI car(void *arg)
 	//영화를 시청한다
 	statusSeat();
 	cout << "\t[차가 말한다] : " << input.car_id << "번 차량 " << input.seat << " 자리에서 " << input.time/1000 << "분 동안 영화 시청중" << endl;
-	Sleep(input.time);
+	//Sleep(input.time);
 	
 	//영화 시청을 마치고 계산대로 간다.
 	//계산하는 사람에게 나 계산한다고 신호를 준다.
