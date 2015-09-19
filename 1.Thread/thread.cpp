@@ -23,7 +23,7 @@ typedef struct UserData
 	unsigned int seat; //영화 시청 좌석
 }UserData;
 
-string movie[] = {"앤트맨","사도","어벤져스","헐크"};
+string movie[] = { "앤트맨","사도","어벤져스","헐크" };
 BOOL seatArray[SEAT_MAX];
 int movie_price[] = { 4500, 4000, 5000, 4000 };
 int movieTime[] = { 3,4,5,6 };
@@ -69,9 +69,9 @@ int main()
 
 	//필요한 세마포어 만든다
 	SEMA_turnel = CreateSemaphore(NULL, MAXOFTURNEL, MAXOFTURNEL, NULL);
-	SEMA_Hellow_READER = CreateSemaphore(NULL, 0, 1, NULL);	
+	SEMA_Hellow_READER = CreateSemaphore(NULL, 0, 1, NULL);
 	SEMA_SelectStart = CreateSemaphore(NULL, 0, 1, NULL);
-	SEMA_SelectFinish = CreateSemaphore(NULL, 1, 1, NULL);
+	SEMA_SelectFinish = CreateSemaphore(NULL, 0, 1, NULL);
 	SEMA_EnterEntrance = CreateSemaphore(NULL, 1, 1, NULL);
 	SEMA_LeaveEntrance = CreateSemaphore(NULL, 0, 1, NULL);
 	SEMA_Hellow_CASHRIER = CreateSemaphore(NULL, 0, 1, NULL);
@@ -91,9 +91,9 @@ int main()
 		handleOfcar[i] = (HANDLE)_beginthreadex(NULL, NULL, car, (void*)&param[i], 0, NULL);
 		Sleep(1);
 	}
-	
+
 	//모든 쓰레드 종료할때까지 대기
-	WaitForMultipleObjects(THREAD_CNT, handleOfcar, TRUE, INFINITE);	
+	WaitForMultipleObjects(THREAD_CNT, handleOfcar, TRUE, INFINITE);
 	WaitForSingleObject(car_reader, INFINITE);
 	WaitForSingleObject(cashier, INFINITE);
 
@@ -103,7 +103,7 @@ int main()
 	CloseHandle(SEMA_SelectFinish);
 	CloseHandle(SEMA_EnterEntrance);
 	CloseHandle(SEMA_LeaveEntrance);
-	CloseHandle(SEMA_Hellow_READER);	
+	CloseHandle(SEMA_Hellow_READER);
 	CloseHandle(SEMA_Hellow_CASHRIER);
 	CloseHandle(SEMA_RECEIPT);
 	CloseHandle(speakmutex);
@@ -130,11 +130,11 @@ unsigned WINAPI car(void *arg)
 	//터널에 5명이상 있으면 내 차례가 될때까지 도로에서 대기
 	WaitForSingleObject(SEMA_turnel, INFINITE);
 	enter_turnel(input.car_id);
-	
+
 	//차량인식기에 내 차례가 될때까지 터널에서 대기
-	WaitForSingleObject(SEMA_EnterEntrance, INFINITE);		
+	WaitForSingleObject(SEMA_EnterEntrance, INFINITE);
 	//차량인식기에 앞에 섬
-	enter_entrance(&input);	
+	enter_entrance(&input);
 	//챠량인식기에서 나감
 	ReleaseSemaphore(SEMA_LeaveEntrance, 1, NULL);
 
@@ -143,9 +143,9 @@ unsigned WINAPI car(void *arg)
 
 	//영화를 시청한다
 	statusSeat();
-	cout << "\t[차가 말한다] : " << input.car_id << "번 차량 " << input.seat << " 자리에서 " << input.time/1000 << "분 동안 영화 시청중" << endl;
-	//Sleep(input.time);
-	
+	cout << "\t[차가 말한다] : " << input.car_id << "번 차량 " << input.seat << " 자리에서 " << input.time / 1000 << "분 동안 영화 시청중" << endl;
+	Sleep(input.time);
+
 	//영화 시청을 마치고 계산대로 간다.
 	//계산하는 사람에게 나 계산한다고 신호를 준다.
 	ReleaseSemaphore(SEMA_Hellow_CASHRIER, 1, NULL);
@@ -172,8 +172,8 @@ unsigned WINAPI Entrance_worker(void *arg)
 	while (end++ < THREAD_CNT)
 	{
 		//차량인식기에 차가 올때까지 대기
-		WaitForSingleObject(SEMA_Hellow_READER, INFINITE);		
-		recognize_car();		
+		WaitForSingleObject(SEMA_Hellow_READER, INFINITE);
+		recognize_car();
 		//들어온차가 영화 고르라고 신호를 줌		
 		ReleaseSemaphore(SEMA_SelectStart, 1, NULL);
 		//출력화면 보기위해 딜레이를 줌
@@ -192,7 +192,7 @@ unsigned WINAPI Entrance_worker(void *arg)
 		cout << "======================== 다른차 들어오세요 =====================" << endl;
 		ReleaseMutex(speakmutex);
 	}
-	
+
 	cout << "\t\t[차량인식기가 말한다] =========================== 칼퇴근 합니다 =============================" << endl;
 	return 0;
 }
@@ -222,50 +222,50 @@ unsigned WINAPI Exit_worker(void *arg)
 void recognize_car()
 {
 	WaitForSingleObject(speakmutex, INFINITE);
-	cout << "\t\t[차량인식기가 말한다] : " << "차들어옴" << endl;	
-	ReleaseMutex(speakmutex);	
+	cout << "\t\t[차량인식기가 말한다] : " << "차들어옴" << endl;
+	ReleaseMutex(speakmutex);
 }
 
 //터널 카운팅 세마포어
 void enter_turnel(int carNum)
 {
 	WaitForSingleObject(speakmutex, INFINITE);
-	cout << "[차가 말한다] : " << carNum << "번 차량 터널들어감" << endl;	
+	cout << "[차가 말한다] : " << carNum << "번 차량 터널들어감" << endl;
 	ReleaseMutex(speakmutex);
 }
 
 //차량인식기에 1명만 들어갈 수 있음
 void enter_entrance(UserData *input)
-{	
+{
 	WaitForSingleObject(speakmutex, INFINITE);
-	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 차량인식기앞 도착" << endl;	
+	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 차량인식기앞 도착" << endl;
 	ReleaseMutex(speakmutex);
-		
+
 	//차량인식기에 나왔다고 통보
 	ReleaseSemaphore(SEMA_Hellow_READER, 1, NULL);
 	//차량인식기에서 영화고르라는 신호를 대기
 	WaitForSingleObject(SEMA_SelectStart, INFINITE);
-	
+
 	//영화고름	
-	int select = myrand(movieSize);	
+	int select = myrand(movieSize);
 	input->movie = movie[select];
-	input->price = movie_price[select];	
+	input->price = movie_price[select];
 	input->time = movieTime[select] * 1000;
 	input->seat = getSeat();
-	WaitForSingleObject(speakmutex, INFINITE);	
-	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 '" << input->movie << "' 영화 고름"<< endl;	
-	
-	
+	WaitForSingleObject(speakmutex, INFINITE);
+	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 '" << input->movie << "' 영화 고름" << endl;
+	ReleaseMutex(speakmutex);
+
 	//차량인식기에 영화전부 골랐다는 신호를 줌
-	ReleaseSemaphore(SEMA_SelectFinish, 1, NULL);	
-	
+	ReleaseSemaphore(SEMA_SelectFinish, 1, NULL);
+
 }
 
 //차가 계산하는 과정
 void pay(UserData *input)
 {
 	WaitForSingleObject(speakmutex, INFINITE);
-	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 " << input->price << " 아까운 돈을 건네준다" << endl;	
+	cout << "\t[차가 말한다] : " << input->car_id << "번 차량 " << input->price << " 아까운 돈을 건네준다" << endl;
 	ReleaseMutex(speakmutex);
 	WaitForSingleObject(SEMA_RECEIPT, INFINITE);
 }
@@ -276,8 +276,8 @@ unsigned int myrand(int max)
 	mt19937 engine((unsigned int)time(NULL));                  // MT19937 난수 엔진
 	uniform_int_distribution<int> distribution(0, max);       // 생성 범위
 	auto generator = bind(distribution, engine);
-	
-	return generator();	
+
+	return generator();
 }
 
 //좌석고름
@@ -288,13 +288,13 @@ unsigned int getSeat()
 	while (TRUE)
 	{
 		seat = myrand(SEAT_MAX);
-		
+
 		if (!seatArray[seat])
 		{
 			seatArray[seat] = TRUE;
 			break;
 		}
-	
+
 	}
 	ReleaseMutex(seatmutex);
 	return seat;
@@ -302,7 +302,7 @@ unsigned int getSeat()
 
 void ReleaseSeat(unsigned int n)
 {
-	WaitForSingleObject(seatmutex, INFINITE);	
+	WaitForSingleObject(seatmutex, INFINITE);
 	seatArray[n] = FALSE;
 	ReleaseMutex(seatmutex);
 }
