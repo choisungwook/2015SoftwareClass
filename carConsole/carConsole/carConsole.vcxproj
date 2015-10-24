@@ -67,11 +67,13 @@
   <ItemGroup>
     <ClCompile Include="carThread.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="recognizer.cpp" />
     <ClCompile Include="Screen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="carThread.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="recognizer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

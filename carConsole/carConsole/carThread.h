@@ -13,8 +13,9 @@ typedef struct carArg
 	int posY;
 }carArg;
 
-
-//쓰레드 함수
+//치 쓰레드 함수
+unsigned WINAPI CreateCarThread(void *ARG);
+void destoryCarThread();
 unsigned WINAPI car(void *arg);
 
 #endif

@@ -2,12 +2,17 @@
 #define __MAIN_H__
 #define WIDTH 1024
 #define HEIGHT 768
-#define CAR_WIDTH 100
-#define CAR_HEIGHT 53
-
+#define MAXOFTURNEL 3 //터널 카운트 설정
 
 #include <Windows.h>
 #include "carThread.h"
+
+//충돌체크 배열
+extern int			collisionBuf[WIDTH][HEIGHT];
+
+//충돌체크 뮤텍스
+extern HANDLE		collisionMutex;
+
 extern char			*carImagePath;
 extern char			*backgroundImagePath;
 
@@ -17,19 +22,22 @@ extern HBITMAP		hbackbit;
 extern HBITMAP		hbackground;
 extern HBITMAP		hcar[numOfCar];
 
-
+//차쓰레드 관련
+extern HANDLE		carThread[numOfCar];
 extern carArg		arg[numOfCar];
+
+//세마포어
+extern HANDLE		SEMA_turnel; //터널 카운터 동기화
 
 //함수
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void getPNGhBitmap(HBITMAP *hbitmap, char *path);
 void DestoryThread();
-void _createThread();
+void SemaphoreInit();
+void DestorySemaphore();
 
-
-//test
-void DrawonMemory();
+//Screen
 void Update();
-
+void getPNGhBitmap(HBITMAP *hbitmap, char *path);
+void getMaxScreen(int *width, int *height);
 
 #endif
