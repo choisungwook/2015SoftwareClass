@@ -1,7 +1,7 @@
 #ifndef __CARTHREAD_H__
 #define __CARTHREAD_H__
 
-#define numOfCar 15
+#define numOfCar 7
 
 #include <process.h>
 #include <Windows.h>

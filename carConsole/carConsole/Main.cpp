@@ -4,10 +4,8 @@
 #include "carThread.h"
 
 
-
-
-char		*backgroundImagePath	= "C:\\Users\\choisunguk\\Pictures\\softwareclass\\background2.png";
-char		*carImagePath			= "C:\\Users\\choisunguk\\Pictures\\car4.png";
+char		*backgroundImagePath	= "img\\background.png";
+char		*carImagePath			= "img\\car.png";
 HINSTANCE	hInst;
 HWND		hWnd;
 HBITMAP		hbackbit;
@@ -19,16 +17,22 @@ carArg arg[numOfCar];
 
 
 HBITMAP hbackground;
-HBITMAP carbitmap[numOfCar];
+HBITMAP hcar[numOfCar];
 CImage Ibackground;
 CImage Icar[numOfCar];
 
-//INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 int main()
 {
+	int	nWidth, nHeight;//윈도우 크기 
+
 	hInst = (HINSTANCE)::GetModuleHandle(NULL);
 
-	WNDCLASS wc =					// Register the window class
+	//윈도우창 최대 크기 구하기
+	nWidth = GetSystemMetrics(SM_CXSCREEN); 
+	nHeight = GetSystemMetrics(SM_CXSCREEN); 
+
+	//윈도우 클래스 생성 및 등록
+	WNDCLASS wc =					
 	{
 		CS_CLASSDC
 		, WndProc
@@ -48,8 +52,8 @@ int main()
 	hWnd = CreateWindow("차영화관"
 		, "차차차차"
 		, WS_OVERLAPPEDWINDOW | WS_VISIBLE
-		, 20
-		, 10
+		, 0
+		, 0
 		, WIDTH
 		, HEIGHT
 		, NULL
@@ -62,17 +66,8 @@ int main()
 	::UpdateWindow(hWnd);
 	::ShowCursor(TRUE);
 
-	_createThread();
 
-	//////////////////////////////////////////////
-	// 이미지 가져오기
-	/////////////////////////////////////////////
-
-	//자동차 이미지
-	/*for (int i = 0; i < numOfCar; i++)
-		getPNGhBitmap(&carbitmap[i], carImagePath);*/
-
-
+	
 	MSG msg;
 	memset(&msg, 0, sizeof(msg));
 	
@@ -108,20 +103,16 @@ HBITMAP loadBitmap(const wchar_t* path)
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {	
-	/*HBITMAP hbackground;
-	HBITMAP OldBitmap;*/
-	
+
 	if (msg == WM_CREATE)
 	{
-		////////////////////////////////////////
-		//배경이미지 초기화
-		////////////////////////////////////////
-		//Ibackground.Load(backgroundImagePath);
-		////자동차
-		//for (int i = 0; i < numOfCar; i++)
-		//	Icar[i].Load(carImagePath);
+		/*getPNGhBitmap(&hbackground, backgroundImagePath);
 
-		getPNGhBitmap(&hbackground, backgroundImagePath);
+		for (int i = 0; i < numOfCar; i++)
+			getPNGhBitmap(&hcar[i], carImagePath);*/
+		
+		//쓰레드 생성
+		_createThread();
 	}
 
 	else if (msg == WM_DESTROY)
@@ -132,27 +123,24 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	else if (msg == WM_PAINT)
-	{			
-		PAINTSTRUCT ps = { 0, };
-		HDC hdc = NULL, MemDC = NULL;
-		HBITMAP holdbit = NULL;
+	{	
+		HDC hdc, MemDC;
+		RECT crt;
+		HBITMAP OldBit;
+		PAINTSTRUCT ps;
 
-		//초기화
 		hdc = BeginPaint(hWnd, &ps);		
-		MemDC = CreateCompatibleDC(hdc);	
-		
-		DrawonMemory(hdc, hbackground, WIDTH, HEIGHT); //배경 그리기
-
-		//후면 버퍼 전면으로 옮기기
-		holdbit = (HBITMAP)SelectObject(MemDC, hbackbit);
-		/*SelectObject(MemDC, hbackground);
-		TransparentBlt(hdc, 0, 0, WIDTH, HEIGHT, MemDC, 0, 0, WIDTH, HEIGHT, RGB(255, 255, 255));*/
-		TransparentBlt(hdc, 0, 0, WIDTH, HEIGHT, MemDC, 0, 0, WIDTH, HEIGHT, RGB(255, 255, 255)); 
-
-		//삭제
-		SelectObject(MemDC, holdbit);
+		GetClientRect(hWnd, &crt);
+		MemDC = CreateCompatibleDC(hdc);
+		OldBit = (HBITMAP)SelectObject(MemDC, hbackbit);
+		//BitBlt(hdc, 0, 0, crt.right, crt.bottom, MemDC, 0, 0, SRCCOPY);
+		TransparentBlt(hdc, 0, 0, crt.right, crt.bottom, MemDC, 0, 0, crt.right, crt.bottom, RGB(0, 0, 0));		
+		SelectObject(MemDC, OldBit);
 		DeleteDC(MemDC);
 		EndPaint(hWnd, &ps);
+		
+		return 0;
+		
 	}
 
 	return ::DefWindowProc(hWnd, msg, wParam, lParam);
@@ -199,7 +187,9 @@ void _createThread()
 		arg[i].id = i;
 		arg[i].posX = posX;
 		arg[i].posY = posY;
-		posY += 20;
+		posY += 40;
+		posX += 40;
 		carThread[i] = (HANDLE)_beginthreadex(NULL, NULL, car, (void*)&arg[i], 0, NULL);
+		
 	}
 }
