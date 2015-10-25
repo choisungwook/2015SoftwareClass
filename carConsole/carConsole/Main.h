@@ -2,7 +2,7 @@
 #define __MAIN_H__
 #define WIDTH 1024
 #define HEIGHT 768
-#define MAXOFTURNEL 3 //터널 카운트 설정
+#define MAXOFTURNEL 2 //터널 카운트 설정
 
 #include <Windows.h>
 #include "carThread.h"
@@ -26,8 +26,13 @@ extern HBITMAP		hcar[numOfCar];
 extern HANDLE		carThread[numOfCar];
 extern carArg		arg[numOfCar];
 
+//차량인식기
+extern HANDLE		carReader;
+
 //세마포어
 extern HANDLE		SEMA_turnel; //터널 카운터 동기화
+extern HANDLE		Hellow_READER;
+extern HANDLE		Leave_READER;
 
 //함수
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

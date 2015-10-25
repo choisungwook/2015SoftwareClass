@@ -1,6 +1,7 @@
 #include "Main.h"
 #include <stdio.h>
 #include "carThread.h"
+#include "recognizer.h"
 
 //충돌체크 배열
 int			collisionBuf[WIDTH][HEIGHT];
@@ -14,6 +15,8 @@ char		*carImagePath			= "img\\car.png";
 
 //세마포어
 HANDLE		SEMA_turnel; //터널 카운터 동기화
+HANDLE		Hellow_READER;
+HANDLE		Leave_READER;
 
 //충돌체크 뮤텍스
 HANDLE		collisionMutex;
@@ -26,12 +29,15 @@ HBITMAP		hbackbit;
 //차쓰레드
 HANDLE carController; //차 컨트롤러
 HANDLE carThread[numOfCar];
+
+//차량인식기쓰레드
+HANDLE carReader;
+
 //차의 좌표
 carArg arg[numOfCar];
 
 HBITMAP hbackground;
 HBITMAP hcar[numOfCar];
-
 
 int main()
 {
@@ -96,8 +102,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	if (msg == WM_CREATE)
 	{
 		SemaphoreInit();
-		carController = (HANDLE)_beginthreadex(NULL, NULL, CreateCarThread, NULL, 0, NULL);
-	
+		carController = (HANDLE)_beginthreadex(NULL, NULL, CreateCarThread, NULL, 0, NULL);		
+		createReaderThread();
 	}
 
 	else if (msg == WM_DESTROY)
@@ -149,6 +155,8 @@ void DestoryThread()
 
 	//차쓰레드 파괴
 	destoryCarThread();
+	//차량인시기 파괴
+	DestoryReaderThread();
 	//세마포어 파괴
 	DestorySemaphore();
 }
@@ -157,10 +165,14 @@ void DestorySemaphore()
 {
 	CloseHandle(SEMA_turnel);
 	CloseHandle(collisionMutex);
+	CloseHandle(Hellow_READER);
+	CloseHandle(Leave_READER);
 }
 
 void SemaphoreInit()
 {
 	collisionMutex = CreateMutex(NULL, FALSE, NULL);
 	SEMA_turnel = CreateSemaphore(NULL, MAXOFTURNEL, MAXOFTURNEL, NULL);
+	Hellow_READER = CreateSemaphore(NULL, 0, 1, NULL);
+	Leave_READER = CreateSemaphore(NULL, 0, 1, NULL);
 }

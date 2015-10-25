@@ -66,21 +66,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="carThread.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="recognizer.cpp" />
     <ClCompile Include="Screen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="carThread.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="recognizer.h" />
-    <ClInclude Include="resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="carConsole1.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\..\Pictures\softwareclass\background.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
