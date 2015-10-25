@@ -120,7 +120,7 @@ void TalktoReader(carArg *Arg)
 	Arg->rect.right = Arg->rect.left + CAR02WIDTH;
 	Arg->rect.top = Arg->rect.right + CAR02HEIGHT;
 
-	while (true);
+	
 	//안으로들어감
 	while (Arg->posY > -50)
 	{		
