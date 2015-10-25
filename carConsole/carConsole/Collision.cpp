@@ -1,50 +1,39 @@
 #include "Collision.h"
 #include "Main.h"
+#include <stdio.h>
 
-//충돌체크 배열
-//extern int			collisionBuf[WIDTH][HEIGHT];
 
-//충돌체크감지
-bool detectCollision(int x, int y)
+
+void setCollision(carArg *arg,int a, int b)
 {
-	if (collisionBuf[x][y])
-		return true;
+	(arg->posX) += a;
+	(arg->posY) += b;
 
-	return false;
+	arg->rect.left += a;
+	arg->rect.top += b;
+	arg->rect.right += a;
+	arg->rect.bottom += b;
 }
 
-bool detectCollision(int carID, int x, int y)
+//test
+bool testCollision(int carID, RECT *src)
 {
 	for (int i = 0; i < numOfCar; i++)
 	{
 		if (i == carID)
 			continue;
 
-		if (detectCollisionOfRight(i, x, y))
-			return false;
+		if ((src->left < arg[i].rect.right) &&
+			(src->top < arg[i].rect.bottom) &&
+			(src->right > arg[i].rect.left) &&
+			(src->bottom > arg[i].rect.top))
+		{
+			if (carID < i)
+				return false;
+			printf("%d %d충돌 발생\n", carID, i);
+			return true;
+		}
 	}
-	return true;
-}
-
-//오른쪽 충돌체크
-bool detectCollisionOfRight(int carID, int x, int y)
-{
-	if ((x + 100 <= arg[carID].posX) &&
-		(x > arg[carID].posX))
-		return true;
 
 	return false;
-}
-
-//충돌체크설정
-void setCollision(int *x, int *y, int a, int b)
-{
-	for (int i = *x; i < 100; i++)
-	{
-
-	}
-	collisionBuf[*x][*y] = 0;
-	(*x) += a;
-	(*y) += b;
-	collisionBuf[*x][*y] = 1;
 }

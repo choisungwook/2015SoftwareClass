@@ -1,14 +1,14 @@
 #include "Main.h"
 #include <atlimage.h> //CImage
 
-extern HBITMAP		hbackbit;
-extern HBITMAP		hbackground;
-extern HBITMAP		hcar[numOfCar];
-
-extern carArg		arg[numOfCar];
-
-extern char			*carImagePath;
-extern char			*backgroundImagePath;
+//extern HBITMAP		hbackbit;
+//extern HBITMAP		hbackground;
+//extern HBITMAP		hcar[numOfCar];
+//
+//extern carArg		arg[numOfCar];
+//
+//extern char			*carImagePath;
+//extern char			*backgroundImagePath;
 
 
 //화면의 정보를 업데이트함

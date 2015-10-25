@@ -3,8 +3,6 @@
 #include "carThread.h"
 #include "recognizer.h"
 
-//충돌체크 배열
-int			collisionBuf[WIDTH][HEIGHT];
 
 //윈도우창 제목 관련 변수
 char		*title					= "3조";

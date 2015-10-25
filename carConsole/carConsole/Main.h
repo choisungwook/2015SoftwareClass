@@ -2,13 +2,10 @@
 #define __MAIN_H__
 #define WIDTH 1024
 #define HEIGHT 768
-#define MAXOFTURNEL 2 //터널 카운트 설정
+#define MAXOFTURNEL 4 //터널 카운트 설정
 
 #include <Windows.h>
 #include "carThread.h"
-
-//충돌체크 배열
-extern int			collisionBuf[WIDTH][HEIGHT];
 
 //충돌체크 뮤텍스
 extern HANDLE		collisionMutex;

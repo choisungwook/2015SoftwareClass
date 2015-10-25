@@ -20,25 +20,38 @@
 
 unsigned WINAPI CreateCarThread(void *ARG)
 {
+	RECT rt;
+
 	int posX = 0, posY = 670;
+	int ID = 0;
 
 	//차 쓰레드 인자 초기화
 	ZeroMemory(arg, sizeof(arg));
 
-	for (int i = 0; i < numOfCar; i++)
-		arg[i].posY = posY;
-
-	//차 쓰레드 생성
+	
 	for (int i = 0; i < numOfCar; i++)
 	{
 		arg[i].id = i;
-		arg[i].posX = posX;
+
+		if (i == 0)
+			arg[i].posX = CAR1WIDTH;
+		else
+			arg[i].posX = 0;
+
 		arg[i].posY = posY;
-		//posX += 100;
-		carThread[i] = (HANDLE)_beginthreadex(NULL, NULL, car, (void*)&arg[i], 0, NULL);
-		
-		Sleep(300);
 	}
+
+	for (int i = 0; i < numOfCar; i++)
+	{
+		//차지하는 영역 
+		arg[i].rect.left = arg[i].posX;
+		arg[i].rect.top = arg[i].posY;
+		arg[i].rect.right = arg[i].posX + CAR1WIDTH;
+		arg[i].rect.bottom = arg[i].posY + CAR1HEIGHT;
+		carThread[i] = (HANDLE)_beginthreadex(NULL, NULL, car, (void*)&arg[i], 0, NULL);
+
+		Sleep(500);
+	}	
 
 	//차쓰레드가 모두 종료할때까지 대기한다
 	WaitForMultipleObjects(numOfCar, carThread, TRUE, INFINITE);
@@ -60,66 +73,12 @@ unsigned WINAPI car(void *arg)
 
 	//터널에 n명이상 있으면 내 차례가 될때까지 도로에서 대기
 	WaitForSingleObject(SEMA_turnel, INFINITE);
-	enterTurnel(Argument);
-	//for (int i = 0; i < 8; i++)
-	//{
-	//	WaitForSingleObject(collisionMutex,INFINITE);
-
-	//	if (collisionBuf[Argument->posX + 100][Argument->posY])
-	//	{
-	//		i--;
-	//		ReleaseMutex(collisionMutex);
-	//		continue;
-	//	}
-	//	else
-	//	{
-	//		collisionBuf[Argument->posX][Argument->posY] = 0;
-	//		Argument->posX += 100;
-	//		collisionBuf[Argument->posX][Argument->posY] = 1;
-	//		ReleaseMutex(collisionMutex);
-	//	}
-
-	//	Sleep(100);
-	//	//Argument->posX += 1;
-	//	Update();		
-	//}
-	//
-	////차량인식기에 나왔다고 통보
-	//ReleaseSemaphore(Hellow_READER, 1, NULL);
-
-	////뒤에 대기하던 차에게 터널로 들어오라고 신호줌	
-	//ReleaseSemaphore(SEMA_turnel, 1, NULL);
-
-	//for (int i = 0; i < 20; i++)
-	//{
-	//	WaitForSingleObject(collisionMutex, INFINITE);
-
-	//	if (collisionBuf[Argument->posX][Argument->posY-30])
-	//	{
-	//		i--;
-	//		ReleaseMutex(collisionMutex);
-	//		continue;
-	//	}
-	//	else
-	//	{
-	//		collisionBuf[Argument->posX][Argument->posY] = 0;
-	//		Argument->posY -= 30;
-	//		collisionBuf[Argument->posX][Argument->posY] = 1;
-	//		ReleaseMutex(collisionMutex);
-	//	}
-
-	//	Sleep(100);
-	//	//Argument->posX += 1;
-	//	Update();
-	//}
-
-	//터널
+	//터널에 들어감
+	enterTurnel(Argument);	
+	//터널들어가라고 신호줌
 	ReleaseSemaphore(SEMA_turnel, 1, NULL);
 	printf("[INFO] %d Thread done\n", Argument->id);
 
-	
-
-	
 	return 0;
 }
 
@@ -129,27 +88,13 @@ void enterTurnel(carArg *Arg)
 
 	while (Arg->posX < 700)
 	{
-		for (int i = 0; i < numOfCar; i++)
-		{
-			if (i == Arg->id)
-				continue;
-
-			if (!detectCollisionOfRight(Arg->id, Arg->posX, Arg->posY))
-			{
-				Update();
-			}
+		WaitForSingleObject(collisionMutex, INFINITE);
+		if (!testCollision(Arg->id, &Arg->rect))
+		{		
+			setCollision(Arg, a, b);
+			Update();
 		}
-		/*if (!detectCollisionOfRight(Arg->id, Arg->posX, Arg->posY))
-		{
-			setCollision(&(*Arg).posX, &(*Arg).posY, a, b);
-			Update();
-			Sleep(300);
-		}*/
-		/*if (!detectCollision(Arg->posX + a, Arg->posY))
-		{
-			setCollision(&(*Arg).posX, &(*Arg).posY, a, b);
-			Update();
-			Sleep(300);
-		}*/
+		ReleaseMutex(collisionMutex);
+		Sleep(100);	
 	}
 }

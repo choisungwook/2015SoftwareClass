@@ -1,13 +1,10 @@
 #ifndef __CARCOLIISION_H__
 #define __CARCOLIISION_H__
 
+#include <Windows.h>
+#include "carThread.h"
 
-bool detectCollision(int x, int y);
-bool detectCollision(int carID, int x, int y);
-//오른쪽 충돌체크
-bool detectCollisionOfRight(int carID, int x, int y);
-
-
-void setCollision(int *x, int *y, int a, int b);
-
+//test
+bool testCollision(int carID, RECT *src);
+void setCollision(carArg *arg, int a, int b);
 #endif
