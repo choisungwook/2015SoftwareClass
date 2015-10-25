@@ -1,25 +1,15 @@
 #include "Main.h"
+#include "Screen.h"
 #include <atlimage.h> //CImage
-
-//extern HBITMAP		hbackbit;
-//extern HBITMAP		hbackground;
-//extern HBITMAP		hcar[numOfCar];
-//
-//extern carArg		arg[numOfCar];
-//
-//extern char			*carImagePath;
-//extern char			*backgroundImagePath;
-
 
 //화면의 정보를 업데이트함
 void Update()
 {
 	HDC hdc, MemDC;
 	HDC BitDC;
-	BITMAP bitmap;
-	HBITMAP MyBit, OldBit;
+	HBITMAP OldBit;
 	RECT crt;
-	int bw, bh;
+
 
 	//초기화
 	GetClientRect(hWnd, &crt);
@@ -30,28 +20,34 @@ void Update()
 	BitDC = CreateCompatibleDC(hdc);
 	OldBit = (HBITMAP)SelectObject(MemDC, hbackbit);	
 
-	//이미지그리기
-	MyBit = (HBITMAP)LoadImage(hInst, "background.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	OldBit = (HBITMAP)SelectObject(BitDC, MyBit);
-	GetObject(MyBit, sizeof(BITMAP), &bitmap);
-	bw = bitmap.bmWidth;
-	bh = bitmap.bmHeight;
-	BitBlt(MemDC, 0, 0, bw, bh, BitDC, 0, 0, SRCCOPY);
-	//TransparentBlt(MemDC, 0, 0, bw, bh, BitDC, 0, 0, bw, bh, RGB(0, 0, 0));
-	DeleteObject(SelectObject(BitDC, OldBit));
+	//배경화면 그리기
+	drawOnMemory(backgroundImagePath, BitDC, MemDC, 0, 0, 1);
 
+	//차량인식기 그리기
+	if (ReaderDown)	
+		drawOnMemory(carReaderDownImagePath, BitDC, MemDC, WIDTH / 2 + 250, HEIGHT / 2 + 250, 2);	
+	else	
+		drawOnMemory(carReaderUpImagePath, BitDC, MemDC, WIDTH / 2 + 410, HEIGHT / 2 + 110, 2);
+	
 	//차그리기
 	for (int i = 0; i < numOfCar; i++)
-	{		
-		MyBit = (HBITMAP)LoadImage(hInst, "car.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-		OldBit = (HBITMAP)SelectObject(BitDC,   MyBit);
-		GetObject(MyBit, sizeof(BITMAP), &bitmap);
-		bw = bitmap.bmWidth;
-		bh = bitmap.bmHeight;				
-		TransparentBlt(MemDC, arg[i].posX, arg[i].posY, bw, bh, BitDC, 0, 0, bw, bh, RGB(255, 255, 255));		
-		//BitBlt(MemDC, arg[i].posX, arg[i].posY, bw, bh, BitDC, 0, 0, SRCCOPY);
-		DeleteObject(SelectObject(BitDC, OldBit));
+	{
+		switch (arg[i].direction)
+		{
+		case 0: //오른쪽
+			if (arg[i].sort == 0)
+				drawOnMemory(car0rightImagePath, BitDC, MemDC, arg[i].posX, arg[i].posY, 2);			
+			break;
+		case 1: //왼쪽
+			break;
+		case 2: //위
+			if (arg[i].sort == 0)
+				drawOnMemory(car0upImagePath, BitDC, MemDC, arg[i].posX, arg[i].posY, 2);
+			break;
+		}
+		
 	}
+	
 
 	//종료
 	DeleteDC(MemDC);
@@ -60,6 +56,24 @@ void Update()
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
+void drawOnMemory(char* Imagepath, HDC BackDC, HDC MemDC, int memoryX, int memoryY, int mode)
+{
+	HBITMAP ImageBit	= (HBITMAP)LoadImage(hInst, Imagepath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);	
+	HBITMAP OldBit		= (HBITMAP)SelectObject(BackDC, ImageBit);
+	BITMAP	bitmap;
+	int bw, bh;
+
+	GetObject(ImageBit, sizeof(BITMAP), &bitmap);
+	bw = bitmap.bmWidth;
+	bh = bitmap.bmHeight;
+
+	if (mode == 1)
+		BitBlt(MemDC, memoryX, memoryY, bw, bh, BackDC, 0, 0, SRCCOPY);
+	else if (mode == 2)
+		TransparentBlt(MemDC, memoryX, memoryY, bw, bh, BackDC, 0, 0, bw, bh, RGB(255, 255, 255));
+
+	DeleteObject(SelectObject(BackDC, OldBit));	
+}
 
 //png파일의 정보를 hbitmap으로 변환
 void getPNGhBitmap(HBITMAP *hbitmap, char *path)

@@ -1,8 +1,10 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
+#define SPEED 10
 #define WIDTH 1024
 #define HEIGHT 768
-#define MAXOFTURNEL 4 //터널 카운트 설정
+#define MAXOFTURNEL 2 //터널 카운트 설정
+
 
 #include <Windows.h>
 #include "carThread.h"
@@ -10,8 +12,13 @@
 //충돌체크 뮤텍스
 extern HANDLE		collisionMutex;
 
-extern char			*carImagePath;
+//이미지경로
 extern char			*backgroundImagePath;
+extern char			*carReaderDownImagePath; 
+extern char			*carReaderUpImagePath;
+extern char			*car0rightImagePath;
+extern char			*car0upImagePath;
+
 
 extern HINSTANCE	hInst;
 extern HWND			hWnd;
@@ -25,11 +32,14 @@ extern carArg		arg[numOfCar];
 
 //차량인식기
 extern HANDLE		carReader;
+extern bool			ReaderDown;
 
 //세마포어
 extern HANDLE		SEMA_turnel; //터널 카운터 동기화
 extern HANDLE		Hellow_READER;
 extern HANDLE		Leave_READER;
+extern HANDLE		Enter_READER;
+extern HANDLE		hDown_READER;
 
 //함수
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -37,9 +47,6 @@ void DestoryThread();
 void SemaphoreInit();
 void DestorySemaphore();
 
-//Screen
-void Update();
-void getPNGhBitmap(HBITMAP *hbitmap, char *path);
-void getMaxScreen(int *width, int *height);
+
 
 #endif

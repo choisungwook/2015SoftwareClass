@@ -32,7 +32,22 @@ unsigned WINAPI Entrance_worker(void *arg)
 		//차량인식기에 차가 올때까지 대기
 		WaitForSingleObject(Hellow_READER, INFINITE);
 		printf("============== 차량 들어왔습니다 =============\n");
+
 		
+		//영화를 다골랐다는 신호를 받음
+
+		//해당  데이터의 입력이 끝나고 문을 올림
+		ReaderDown = false;
+
+		//지나가라는 신호를 줌
+		ReleaseSemaphore(Leave_READER, 1, NULL);
+
+		//문을 닫으라는 신호를 받음
+		WaitForSingleObject(hDown_READER, INFINITE);
+		ReaderDown = true;
+
+		//터널에서 대기중인 차량 오라고 신호를 줌
+		ReleaseSemaphore(Enter_READER, 1, NULL);
 	}
 
 	

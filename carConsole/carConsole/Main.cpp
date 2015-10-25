@@ -8,13 +8,18 @@
 char		*title					= "3조";
 char		*lpszname				= "softwareclass";
 //이미지경로
-char		*backgroundImagePath	= "img\\background.png";
-char		*carImagePath			= "img\\car.png";
+char		*backgroundImagePath	= "img\\background.bmp";
+char		*carReaderDownImagePath = "img\\parkinggateDown2.bmp";
+char		*carReaderUpImagePath	= "img\\parkinggateUp2.bmp";
+char		*car0rightImagePath		= "img\\car\\car0\\right.bmp";
+char		*car0upImagePath		= "img\\car\\car0\\up.bmp";
 
 //세마포어
 HANDLE		SEMA_turnel; //터널 카운터 동기화
 HANDLE		Hellow_READER;
 HANDLE		Leave_READER;
+HANDLE		Enter_READER;
+HANDLE		hDown_READER;
 
 //충돌체크 뮤텍스
 HANDLE		collisionMutex;
@@ -29,7 +34,8 @@ HANDLE carController; //차 컨트롤러
 HANDLE carThread[numOfCar];
 
 //차량인식기쓰레드
-HANDLE carReader;
+HANDLE	carReader;
+bool	ReaderDown = true;
 
 //차의 좌표
 carArg arg[numOfCar];
@@ -165,6 +171,8 @@ void DestorySemaphore()
 	CloseHandle(collisionMutex);
 	CloseHandle(Hellow_READER);
 	CloseHandle(Leave_READER);
+	CloseHandle(Enter_READER);
+	CloseHandle(hDown_READER);
 }
 
 void SemaphoreInit()
@@ -173,4 +181,6 @@ void SemaphoreInit()
 	SEMA_turnel = CreateSemaphore(NULL, MAXOFTURNEL, MAXOFTURNEL, NULL);
 	Hellow_READER = CreateSemaphore(NULL, 0, 1, NULL);
 	Leave_READER = CreateSemaphore(NULL, 0, 1, NULL);
+	Enter_READER = CreateSemaphore(NULL, 1, 1, NULL);
+	hDown_READER = CreateSemaphore(NULL, 0, 1, NULL);
 }

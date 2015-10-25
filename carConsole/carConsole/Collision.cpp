@@ -2,8 +2,6 @@
 #include "Main.h"
 #include <stdio.h>
 
-
-
 void setCollision(carArg *arg,int a, int b)
 {
 	(arg->posX) += a;
