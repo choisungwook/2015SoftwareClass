@@ -28,7 +28,7 @@ bool testCollision(int carID, RECT *src)
 		{
 			if (carID < i)
 				return false;
-			printf("%d %d面倒 惯积\n", carID, i);
+			//printf("%d %d面倒 惯积\n", carID, i);
 			return true;
 		}
 	}

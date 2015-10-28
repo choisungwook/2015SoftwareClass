@@ -1,5 +1,6 @@
 #ifndef __RECOGNIZER_H__
 #define	__RECOGNIZER_H__
+#define recognizeSPEED 1000
 
 #include <Windows.h>
 #include <process.h>

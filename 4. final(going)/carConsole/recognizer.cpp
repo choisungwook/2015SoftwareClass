@@ -2,6 +2,8 @@
 #include "carThread.h"
 #include "Main.h"
 #include <stdio.h>
+#include "Utility.h"
+#include "Screen.h"
 
 
 //차량인식기
@@ -34,20 +36,26 @@ unsigned WINAPI Entrance_worker(void *arg)
 		printf("============== 차량 들어왔습니다 =============\n");
 
 		
-		//영화를 다골랐다는 신호를 받음
+		//영화를 다골랐다는 신호를 기다림
+		WaitForSingleObject(hselect_READER, INFINITE);
 
-		//해당  데이터의 입력이 끝나고 문을 올림
+		//해당  데이터의 입력이 끝나고 문을ㅇ 올림
 		ReaderDown = false;
+		Update();
 
 		//지나가라는 신호를 줌
 		ReleaseSemaphore(Leave_READER, 1, NULL);
 
 		//문을 닫으라는 신호를 받음
 		WaitForSingleObject(hDown_READER, INFINITE);
+		
 		ReaderDown = true;
+		Update();
 
 		//터널에서 대기중인 차량 오라고 신호를 줌
 		ReleaseSemaphore(Enter_READER, 1, NULL);
+
+		Sleep(recognizeSPEED);
 	}
 
 	

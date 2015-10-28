@@ -46,6 +46,10 @@ void Update()
 			if (arg[i].sort == 0)
 				drawOnMemory(car0upImagePath, BitDC, MemDC, arg[i].posX, arg[i].posY, 2);
 			break;
+		case 3: //¾Æ·¡
+			if (arg[i].sort == 0)
+				drawOnMemory(car0downImagePath, BitDC, MemDC, arg[i].posX, arg[i].posY, 2);
+			break;
 		}
 		
 	}

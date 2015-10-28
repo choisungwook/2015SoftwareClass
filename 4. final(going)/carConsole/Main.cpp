@@ -3,6 +3,8 @@
 #include "carThread.h"
 #include "recognizer.h"
 #include "Screen.h"
+#include "Utility.h"
+
 
 //윈도우창 제목 관련 변수
 char		*title					= "3조";
@@ -14,6 +16,12 @@ char		*carReaderUpImagePath	= "img\\parkinggateUp2.bmp";
 char		*car0rightImagePath		= "img\\car\\car0\\right.bmp";
 char		*car0leftImagePath		= "img\\car\\car0\\left.bmp";
 char		*car0upImagePath		= "img\\car\\car0\\up.bmp";
+char		*car0downImagePath		= "img\\car\\car0\\down.bmp";
+
+//영화 
+std::string movie[numOfmovie];
+int moviePrice[numOfmovie];
+int movieTime[numOfmovie];
 
 //세마포어
 HANDLE		SEMA_turnel; //터널 카운터 동기화
@@ -21,10 +29,12 @@ HANDLE		Hellow_READER;
 HANDLE		Leave_READER;
 HANDLE		Enter_READER;
 HANDLE		hDown_READER;
+HANDLE		hselect_READER;
 
 //충돌체크 뮤텍스
 HANDLE		collisionMutex;
 HANDLE		screenMutex;
+HANDLE		seatMutex;
 
 //WM_PAINT관련 전역 변수
 HINSTANCE	hInst;
@@ -41,6 +51,9 @@ bool	ReaderDown = true;
 
 //차의 좌표
 carArg arg[numOfCar];
+
+//좌석
+BOOL seatArray[numOfCar];
 
 HBITMAP hbackground;
 HBITMAP hcar[numOfCar];
@@ -110,7 +123,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	if (msg == WM_CREATE)
 	{
-		SemaphoreInit();
+		//초기화
+		movieInit(); //영화관련 초기화
+		seatInit(); //좌석관련 초기화
+		printmovie();
+		SemaphoreInit(); //세마포어 및 뮤텍스 초기화
+
+		//쓰레드 생성
 		carController = (HANDLE)_beginthreadex(NULL, NULL, CreateCarThread, NULL, 0, NULL);		
 		createReaderThread();
 	}
@@ -170,30 +189,3 @@ void DestoryThread()
 	DestorySemaphore();
 }
 
-void DestorySemaphore()
-{
-	//mutex
-	CloseHandle(collisionMutex);
-	CloseHandle(screenMutex);
-
-	//semaphore
-	CloseHandle(SEMA_turnel);	
-	CloseHandle(Hellow_READER);
-	CloseHandle(Leave_READER);
-	CloseHandle(Enter_READER);
-	CloseHandle(hDown_READER);
-}
-
-void SemaphoreInit()
-{
-	//mutex
-	collisionMutex = CreateMutex(NULL, FALSE, NULL);
-	screenMutex = CreateMutex(NULL, FALSE, NULL);
-
-	//semaphore
-	SEMA_turnel = CreateSemaphore(NULL, MAXOFTURNEL, MAXOFTURNEL, NULL);
-	Hellow_READER = CreateSemaphore(NULL, 0, 1, NULL);
-	Leave_READER = CreateSemaphore(NULL, 0, 1, NULL);
-	Enter_READER = CreateSemaphore(NULL, 1, 1, NULL);
-	hDown_READER = CreateSemaphore(NULL, 0, 1, NULL);
-}
