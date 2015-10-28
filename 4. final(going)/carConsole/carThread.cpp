@@ -66,9 +66,10 @@ unsigned WINAPI car(void *arg)
 	//터널들어가라고 신호줌
 	ReleaseSemaphore(SEMA_turnel, 1, NULL);
 	goseat(Argument);
+	watchMovieAndEvent(Argument);
+	goCashier(Argument);
+	
 	printf("[INFO] %d Thread done\n", Argument->id);
-	//자리해제
-	ReleaseSeat(Argument->seat);
 
 	return 0;
 }
@@ -114,7 +115,6 @@ void TalktoReader(carArg *Arg)
 	//만약 좌석이 꽉찬다면 자리가 빌때까지 대기
 	Arg->seat = getSeat();
 	
-
 	//영화전부골랐다고 신호를 줌
 	ReleaseSemaphore(hselect_READER, 1, NULL);
 
@@ -168,7 +168,6 @@ void goseat(carArg *Arg)
 	Arg->direction = 1;
 	changeRectPosition(&(Arg->rect), Arg->rect.left, Arg->rect.top, Arg->rect.left + CAR00WIDTH, Arg->rect.top + CAR00HEIGHT);
 	
-
 	//x좌표까지 이동
 	while (Arg->posX < posX)
 	{
@@ -200,8 +199,6 @@ void goseat(carArg *Arg)
 
 		Sleep(SPEED);
 	}
-	
-	
 }
 
 //좌석 고름
@@ -209,7 +206,6 @@ unsigned int getSeat()
 {
 	unsigned int seat = 0;
 
-	
 	while (true)
 	{
 		seat = myrand(numOfSeat);
@@ -259,3 +255,112 @@ void selectMovie(carArg *arg)
 	arg->movieTime	= movieTime[select];	
 }
 
+void(*eventFunc[4])(int) = 
+{
+	event0,
+	event1,
+};
+
+void watchMovieAndEvent(carArg *arg)
+{
+	int _event = myrand(numOfevent);
+
+	eventFunc[_event](arg->movieTime);
+}
+
+void goCashier(carArg *arg)
+{
+	int posX = 940, posY = 500;
+	int cashierposY = 100;
+
+	while (arg->posY < posY)
+	{
+		if (!testCollision(arg->id, &arg->rect))
+		{
+			setCollision(arg, 0, 10);
+			//WaitForSingleObject(screenMutex, INFINITE);
+			Update();
+			//ReleaseMutex(screenMutex);
+		}
+		Sleep(SPEED);
+	}
+
+	Sleep(1000);	
+	//방향전환시 충돌체크
+	RECT nextPosition;
+	nextPosition.left = arg->rect.left ;
+	nextPosition.top = arg->rect.top + CAR02HEIGHT;
+	nextPosition.right = nextPosition.left + CAR00WIDTH;
+	nextPosition.bottom = nextPosition.top + CAR02HEIGHT;
+
+	//printf("%d %d %d %d\n", arg->rect.left, arg->rect.top, arg->rect.right, arg->rect.bottom);
+	//printf("%d %d %d %d\n", nextPosition.left, nextPosition.top, nextPosition.right, nextPosition.bottom);
+
+	while (testBottomCollision(arg->id, &nextPosition))
+	{
+		Sleep(1000);
+	}
+		//방향전환
+		arg->direction = 1;
+		changeRectPosition(&(arg->rect), nextPosition.left, nextPosition.top, nextPosition.right, nextPosition.bottom);
+		arg->posX = arg->rect.left;
+		arg->posY = arg->rect.top;
+		//printf("posX : %d posY : %d\n", arg->posX, arg->posY);
+		//WaitForSingleObject(screenMutex, INFINITE);
+		Update();
+		
+		//ReleaseMutex(screenMutex);
+	
+
+
+	//x좌표 끝까지 이동
+	while (arg->posX < posX)
+	{
+		if (!testCollision(arg->id, &arg->rect))
+		{
+			setCollision(arg, 10, 0);
+			//WaitForSingleObject(screenMutex, INFINITE);
+			Update();
+			//ReleaseMutex(screenMutex);
+		}
+
+		Sleep(SPEED);
+	}
+
+	//자리해제
+	ReleaseSeat(arg->seat);
+
+	//차량방향이 바껴 충돌영역 재설정
+	arg->direction = 2;
+	changeRectPosition(&(arg->rect), arg->rect.left, arg->rect.top, arg->rect.left + CAR02HEIGHT, arg->rect.top + CAR02WIDTH);
+
+	//계산대까지 이동	
+	printf("y좌표 %d\n", arg->posY);
+	while (arg->posY > cashierposY)
+	{
+		if (!crossCollision(arg->id, &arg->rect))
+		{
+			setCollision(arg, 0, -10);
+			//WaitForSingleObject(screenMutex, INFINITE);
+			Update();
+			//ReleaseMutex(screenMutex);
+		}
+
+		Sleep(SPEED);
+	}
+
+}
+///////////////////////////////////////////////
+//////////// 이벤트 ///////////////////////////
+
+//차에만 있는다
+void event0(int time)
+{
+	printf("event0 called\n");
+	Sleep(time);
+}
+
+void event1(int time)
+{
+	printf("event1 called\n");
+}

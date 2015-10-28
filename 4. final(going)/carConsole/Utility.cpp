@@ -53,7 +53,7 @@ void movieInit()
 	{
 		movie[i] = i + 'A';
 		moviePrice[i] = i + 1000;
-		movieTime[i] = i + 2;
+		movieTime[i] = (i + 2) + 1000;
 	}
 }
 

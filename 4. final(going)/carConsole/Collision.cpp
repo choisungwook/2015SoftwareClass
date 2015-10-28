@@ -35,3 +35,43 @@ bool testCollision(int carID, RECT *src)
 
 	return false;
 }
+
+//test
+bool testBottomCollision(int carID, RECT *src)
+{
+	for (int i = 0; i < numOfCar; i++)
+	{
+		if (i == carID)
+			continue;
+
+		if ((src->left < arg[i].rect.right) &&
+			(src->top < arg[i].rect.bottom) &&
+			(src->right > arg[i].rect.left) &&
+			(src->bottom > arg[i].rect.top))
+		{	
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//test
+bool crossCollision(int carID, RECT *src)
+{
+	for (int i = 0; i < numOfCar; i++)
+	{
+		if (i == carID)
+			continue;
+
+		if ((src->left < arg[i].rect.right) &&
+			(src->top < arg[i].rect.bottom) &&
+			(src->right > arg[i].rect.left) &&
+			(src->bottom > arg[i].rect.top))
+		{
+			if (arg[i].rect.right > src->left)
+				return true;
+		}
+	}
+	return false;
+}
