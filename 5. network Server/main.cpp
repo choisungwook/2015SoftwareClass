@@ -44,8 +44,8 @@ int main()
 		, NULL
 		, LoadCursor(NULL, IDC_ARROW)
 		/*, (HBRUSH)GetStockObject(LTGRAY_BRUSH)*/
-		, CreateSolidBrush(RGB(219, 233, 236))				
-		, NULL
+		, CreateSolidBrush(RGB(219, 233, 236))
+		, MAKEINTRESOURCE(IDR_MENU1)
 		, lpszname
 	};
 
@@ -89,6 +89,10 @@ int main()
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	char str[100], lpstrFile[100] = "";
+	char filter[] = "Every File(*.*) \0*.*\0Text File\0*.txt;*.doc\0";
+	OPENFILENAME OFN;        // OFN 구조체 선언(파일 열때).
+	OPENFILENAME SFN;        // SFN 구조체 선언(저장)               // 하나의 구조체로 해도 상관없지만, 구분되게 보여주기 위해 
 
 	if (msg == WM_CREATE)
 	{	
@@ -97,7 +101,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		BSTMakeAndInit(&sample);
 		BSTMakeAndInit(&car);
 		////////////////////////////
-
+				
+		/////////////////////////////
+		//명령어 초기화
+		initializeCommand();
+		/////////////////////////////
 		for (int i = 0; i < 10; i++)
 		{
 			carArg a;
@@ -176,6 +184,39 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (LOWORD(wParam))
 		{
+		case ID_FILE_OPEN:			
+			memset(&OFN, 0, sizeof(OPENFILENAME));    // memory 초기화  OFN구조체에 0으로 OPENFILENAME만큼의 크기를 초기화 해준다.
+			OFN.lStructSize = sizeof(OPENFILENAME); // OFN 의 구조체크기를 OPENFILENAME의 크기를 넣어준다.
+			OFN.hwndOwner = hWnd;              // OFN의 핸들 위치는 Wnd위치를 갖고 있는 핸들러를 갖는다.
+			OFN.lpstrFilter = filter;                // 위에서 선언한 filter 파일을 받아 TEXT파일, 워드파일, 모든파일의 확장자를 찾아준다.
+			OFN.lpstrFile = lpstrFile;            //열 파일의 이름(위치(?))을 나타내는 듯하다(?)
+			OFN.nMaxFile = 100;                // 글자를 쓸수 있는 파일이름의 길이를 나타낸다.
+			OFN.lpstrInitialDir = ".";            // 파일의 열기가 실행된 위치
+
+			if (GetOpenFileName(&OFN) != 0)  // OFN(열려고 하는 선택된 파일)을 연다.
+			{
+				wsprintf(str, "%s 파일을 열겠습니까?", OFN.lpstrFile);
+				cout << OFN.lpstrFile << endl;
+				MessageBox(hWnd, str, "열기 선택", MB_OK);             // 파일을 열 건지 물어보는 메시지박스 창 생성(OK버튼 하나만 있다.)
+			}
+			break;
+		case ID_FILE_SAVE:
+			memset(&SFN, 0, sizeof(OPENFILENAME));         // 초기화를 해주기 때문에, 같은 변수를 사용해도 문제 없을 듯(?) 하다.
+			SFN.lStructSize = sizeof(OPENFILENAME);
+			SFN.hwndOwner = hWnd;
+			SFN.lpstrFilter = filter;
+			SFN.lpstrFile = lpstrFile;                      // 저장할 파일 이름(?)
+			SFN.nMaxFile = 256;                           // 저장하려는 파일 크기를 256
+			SFN.lpstrInitialDir = ".";
+			if (GetSaveFileName(&SFN) != 0)          // SFN에 저장할 파일이 있는지 묻는 부분.
+			{
+				AVLTREE a;
+				Filesave(a, SFN.lpstrFile);
+				wsprintf(str, "%s 파일로 저장하겠습니까?", SFN.lpstrFile);
+				MessageBox(hWnd, str, "저장하기 선택", MB_OK);
+			}
+			break;
+			break;
 		case 1: //서버실행 --> 서버 소켓 생성 및 accept 활성화 
 			//다이얼로그 활성화
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, DlgProc);

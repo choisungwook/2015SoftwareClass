@@ -14,13 +14,13 @@ typedef struct _clntsockData
 
 typedef carArgument carArg;
 
-typedef void(*commandFunction)(clntsockData, carArg);
+typedef void(*commandFunction)(int, std::string);
 typedef std::map <std::string, commandFunction> FunctionSet;
 typedef std::pair<std::string, commandFunction> commandPair;
 
-void serverLogin(clntsockData clntData, carArg argument);
-void serverInsert(clntsockData clntData, carArg argument);
-void serverRemove(clntsockData clntData, carArg argument);
+void serverLogin(int hsock, std::string data);
+void serverInsert(int hsock, std::string data);
+//void serverRemove(clntsockData clntData, carArg argument);
 
 void initializeCommand();
 

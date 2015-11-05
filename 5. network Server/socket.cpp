@@ -1,15 +1,22 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #include "socket.h"
+#include "function.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <process.h>
 #include <iostream>
+#include <regex>
+#include <string>
+#include <vector>
 using namespace std;
 
 bool _servStatus;
 bool _exitFlag; 
 WSADATA wsaData;
+
+FunctionSet::iterator FunctionSetFinder;
+extern FunctionSet functionset;
 
 void ErrorHandling(char* message)
 {
@@ -17,6 +24,23 @@ void ErrorHandling(char* message)
 	exit(-1);
 }
 
+////////////////////////////////////////
+//////// 정규식 토큰화
+////////////////////////////////////////
+
+void token(string msg, vector<string> &a)
+{
+	regex re("\\.+");
+	sregex_token_iterator it(msg.begin(), msg.end(), re, -1);
+	
+	sregex_token_iterator reg_end;
+	for (; it != reg_end; ++it) {
+		//std::cout << it->str() << std::endl;
+		a.push_back(it->str());
+	}
+}
+
+////////////////////////////////////////////////
 ////////////////////////////////////////
 //////// WINSOCK 초기화 및 파괴
 ////////////////////////////////////////
@@ -84,11 +108,29 @@ unsigned WINAPI startServer(void *arg)
 			_servStatus = true;
 
 		hClntSock = accept(hserversock, (SOCKADDR*)&ClntAddr, &ClntAddrsize);
-
+		
 		if (hClntSock == INVALID_SOCKET)
 			ErrorHandling("accept() error");
 
-		send(hClntSock, hello, sizeof(hello), 0);
+		int recvLen = recv(hClntSock, recvBuf, sizeof(recvBuf), 0);		
+		vector<string> tokenBuf;
+		string msg(recvBuf);
+		token(msg, tokenBuf);
+		
+		FunctionSetFinder = functionset.find(tokenBuf[0]);
+
+		if (FunctionSetFinder != functionset.end())
+		{
+			clntsockData sockData;
+			sockData.hsock = hClntSock;
+
+			cout << "Search Function data " << endl;
+			void (*Func)(int, string);
+			Func = FunctionSetFinder->second;
+			Func(hClntSock, msg);
+		}
+
+		//send(hClntSock, hello, sizeof(hello), 0);
 		printf("sended\n");
 
 		closesocket(hClntSock);

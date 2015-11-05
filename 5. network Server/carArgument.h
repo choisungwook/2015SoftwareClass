@@ -1,6 +1,7 @@
 #ifndef __CARARG__
 #define __CARARG__
 
+
 typedef struct _carArg
 {
 	int id;
@@ -9,7 +10,7 @@ typedef struct _carArg
 	int totalPrice;
 	int lastVisit;
 	int currentVisit;
-	//영화
+	//영화	
 	int movieID;
 	int moviePrice;
 	int movieTime;
