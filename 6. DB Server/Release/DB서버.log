@@ -1,0 +1,23 @@
+﻿Build started 2015-11-08 오전 4:32:44.
+     1>Project "C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\DB서버.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _MBCS /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt function.cpp
+         function.cpp
+     1>function.cpp(33): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\Release\DB서버.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\Release\DB서버.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\Release\DB서버.lib" /MACHINE:X86 /SAFESEH "Release\DB서버.res"
+         Release\avltree.obj
+         Release\FILEIO.obj
+         Release\function.obj
+         Release\main.obj
+         Release\prettyPrintTree.obj
+         Release\socket.obj
+         Release\utility.obj
+         Generating code
+         Finished generating code
+         DB서버.vcxproj -> C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\Release\DB서버.exe
+     1>Done Building Project "C:\Users\choisunguk\Documents\Visual Studio 2013\Projects\DB서버\DB서버.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.46

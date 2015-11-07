@@ -8,6 +8,7 @@
 #include <thread>
 #include <process.h>
 #include <algorithm>
+#include <stdio.h>
 
 #define STEP 10
 #define speed 5
@@ -39,10 +40,13 @@ extern	HANDLE			T_downCashier;
 //차인자
 list<carArgument>		L_carArg;
 
+//움직임
+extern void move(int opcode, int dst, list<carArgument>::iterator car);
+extern bool isempty(int index);
+extern void initializeCreateBuf();
+extern void releaseCreateBuf(int index);
+
 list<carArgument>::iterator getArgumentaddress(int carID);
-bool detcionMode1(int carID, RECT *src);
-bool predictdetcionMode(int carID, RECT *src);
-void move(list<carArgument>::iterator arg, int mode, int dstPostion, int step);
 
 void movetoReader(list<carArgument>::iterator arg);
 void talktoReader(list<carArgument>::iterator arg);
@@ -50,10 +54,12 @@ void movetoseat(list<carArgument>::iterator arg);
 void watchMovie(list<carArgument>::iterator arg);
 void movetocashier(list<carArgument>::iterator arg);
 void paytocashier(list<carArgument>::iterator arg);
+
 //좌석 관련된 함수
 bool isSeatempty(int seat);
 int selectseat();
 void releaseseat(int seat);
+
 //영화를 선택함수
 int selectmovie();
 
@@ -69,13 +75,16 @@ unsigned WINAPI carThread(void *arg)
 	movetocashier(pArg);
 	paytocashier(pArg);
 
-	//작업 완료후 리스트 삭제
+	//작업 완료후 리스트 삭제	
+	int id = pArg->id;
 	watiAndcheckExited(M_accessArg);
 	L_carArg.erase(pArg);
 	ReleaseMutex(M_accessArg);
-
+	deletecarduplicate(id);
+	
 	if (!L_carArg.size())
 		MessageBox(hWndMain, "시뮬레이션 종료", "종료", MB_OK);
+
 	return 0;
 }
 
@@ -84,14 +93,19 @@ unsigned WINAPI createCarThreads(void *arg)
 	for (int i = 0; i < numOfseat; i++)
 		seats[i] = false;
 
-	
+	initializecarmap();
+	initializeCreateBuf();
+
 	//인자초기화
 	for (int i = 0; i < numOfcar; i++)
 	{
 		carArgument input;
 		memset(&input, 0, sizeof(input));
-		//ID
-		input.id = i;
+		do
+		{
+			input.id = myrand(1000);
+		} while (checkduplication(input.id));
+		//input.id = i;
 		//생성되는 위치		
 		if (i == 0)
 			input.posX = collectionXY::createdX - carhorizon::width;
@@ -99,28 +113,27 @@ unsigned WINAPI createCarThreads(void *arg)
 			input.posX = collectionXY::createdX ;
 		input.posY = collectionXY::createdY;		
 		
+		input.sort = myrand(sortOfcar);
 		//충돌영역
 		input.rect.left = input.posX;
 		input.rect.top = input.posY;
 		input.rect.right = input.posX + carhorizon::width;
 		input.rect.bottom = input.posY + carhorizon::height;
 
-		watiAndcheckExited(T_countingturnel);
+		while (!isempty(4));
 		watiAndcheckExited(M_accessArg);
 		L_carArg.push_back(input);
 		ReleaseMutex(M_accessArg);
-
+			
 		//차쓰레드 생성
-		HANDLE Tcar = (HANDLE)_beginthreadex(NULL, NULL, carThread, (void*)&i, 0, NULL);
+		HANDLE Tcar = (HANDLE)_beginthreadex(NULL, NULL, carThread, (void*)&input.id, 0, NULL);
 		T_carThreads.push_back(Tcar);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(speed));;
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));;
 	}
 
 	return 0;
 }
-
-
 
 void destorycarThread()
 {
@@ -149,72 +162,110 @@ list<carArgument>::iterator getArgumentaddress(int carID)
 	return r;
 }
 
-//step1
-//차량인식기 근처까지이동
+////step1
+////차량인식기 근처까지이동
 void movetoReader(list<carArgument>::iterator arg)
 {
-	move(arg, 1, collectionXY::ReadernearX, STEP);
+	//4번 --> 3번
+	while (!isempty(3));	
+	move(0, 900, arg);	
+	releaseCreateBuf(4);
+	//3번 --> 2번
+	while (!isempty(2));
+	move(0, 780, arg);
+	releaseCreateBuf(3);
+	//3번 --> 2번
+	while (!isempty(1));
+	move(0, 650, arg);
+	releaseCreateBuf(2);
+	////2번 --> 1번
+	while (!isempty(0));
+	move(0, 530, arg);
+	releaseCreateBuf(1);
+	
+	watiAndcheckExited(T_countingturnel);
+
+	move(0, collectionXY::ReadernearX, arg);
+	releaseCreateBuf(0);
+	
 }
 
-//step2
-//차량인식기앞에서 작업
+////step2
+////차량인식기앞에서 작업
 void talktoReader(list<carArgument>::iterator arg)
 {
-	//차량인식기 앞자리 비어있을때까지 대기
 	watiAndcheckExited(T_waitReader);
+	move(0, collectionXY::ReaderfrontX, arg);
 
-	//차량인식기앞까지이동 후 방향전환
-	//충돌범위 변경
-	move(arg, 1, collectionXY::ReaderfrontX, STEP);
 	arg->direction = 2;
-	arg->rect.right = arg->rect.left + carvertical::width;
-	arg->rect.bottom = arg->rect.top + carvertical::height;
-
-	//차량왔다는 신호를 줌
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, arg->posY + carvertical::height);
+	
 	ReleaseSemaphore(T_hiReader, 1, NULL);
 
-
-	//서버연결
-	SOCKET s = connect_Server();
-	recvfromserver(s);
-
-	//만약 회원등록이 안되어있으면 등록
-	
-	
 	//영화를고름
 	arg->movieID = selectmovie();
-	arg->moviePrice = 100;
-	arg->movieTime = 100;
+	arg->moviePrice = 0;
+	arg->movieTime = 0;
 	//좌석을고름
 	arg->seat = selectseat();
 
+	//DB연결
+	//현재시간을 구함
+	time_t timer;
+	struct tm t;
+	timer = time(NULL); // 현재 시각을 초 단위로 얻기
+	localtime_s(&t, &timer); // 초 단위의 시간을 분리하여 구조체에 넣기
+	
 	//서버에 갱신
+	//서버연결
+	SOCKET s = connect_Server();
+	//제일 처음 회원등록이 있는지 확인
+	//없으면 등록 요청 
+	//있으면 정보 수정
+	char recvBuf[1024];
+	char sendBuf[1024];
+	sprintf(sendBuf, "Connect.%d", arg->id);	
+	/*OutputDebugString(sendBuf);*/
+	send(s, sendBuf, sizeof(sendBuf), 0);
+	recv(s, recvBuf, sizeof(recvBuf), 0);	
+	sprintf(sendBuf, "Update.%d.1.%d.2.%d.3.%d-%d-%d %d시 %d분",
+		arg->id, arg->sort, arg->moviePrice,
+		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min);
+	send(s, sendBuf, sizeof(sendBuf), 0);
+	recv(s, recvBuf, sizeof(recvBuf), 0);
+	strcpy(sendBuf, "Disconnect");
+	send(s, sendBuf, sizeof(sendBuf), 0);
+	closesocket(s);
 
-	//좌석과 영화를 골랐다는 신호를 줌
+
+
+
+
+	// 좌석과 영화를 골랐다는 신호를 줌
 	ReleaseSemaphore(T_selectReader, 1, NULL);
 	//나가도 좋다는 신호를 받음
 	watiAndcheckExited(T_byeReader);
 	//차량인식기 밖으로 나감
-	move(arg, 2, collectionXY::cornerY + 200, STEP);
-
+	move(1, collectionXY::cornerY + 200, arg);	
+	
 	//다음 기다리고 있는 차량 오라고 신호줌
 	ReleaseSemaphore(T_countingturnel, 1, NULL);
 	//인식기 내려도 된다고 신호를 줌
 	ReleaseSemaphore(T_downReader, 1, NULL);
+
+	move(1, collectionXY::cornerY, arg);
 }
 
 //step3
 //좌석으로이동
 void movetoseat(list<carArgument>::iterator arg)
 {
-	int x = 0;
+	int x;
 
-	//코너로이동
-	move(arg, 2, collectionXY::cornerY, STEP);
 	//오른쪽으로 방향전환 및 충돌체 크기 변경
 	arg->direction = 1;
-	arg->rect.right = arg->rect.left + carhorizon::width;
-	arg->rect.bottom = arg->rect.top + carhorizon::height;
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carhorizon::width, arg->posY + carhorizon::height);
+	
 	//x좌표 설정
 	switch (arg->seat)
 	{
@@ -226,13 +277,12 @@ void movetoseat(list<carArgument>::iterator arg)
 	case 5: x = collectionXY::seat5X; break;
 	}	
 	//좌석 x축까지 이동
-	move(arg, 3, x, STEP);
-
+	move(2, x, arg);
+	
 	//아래로 방향전환 및 충돌체 크기 변경
 	arg->direction = 3;
-	arg->rect.right = arg->rect.left + carvertical::width;
-	arg->rect.bottom = arg->rect.top + carvertical::height;
-	move(arg, 4, collectionXY::seatY, STEP);
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, arg->posY + carvertical::height);
+	move(3, collectionXY::seatY, arg);
 }
 
 //step4
@@ -247,199 +297,41 @@ void watchMovie(list<carArgument>::iterator arg)
 void movetocashier(list<carArgument>::iterator arg)
 {
 	//교차선 앞까지 이동
-	move(arg, 4, collectionXY::seatBottomY, STEP);
+	move(3, collectionXY::seatBottomY, arg);
+
+	releaseseat(arg->seat);
 
 	//예상충돌감지
-	//move(arg, 4, collectionXY::seatBottomY + 70, STEP);
-	while (predictdetcionMode(arg->id, &(arg->rect)))	
-		std::this_thread::sleep_for(std::chrono::milliseconds(speed));
-	
+	move(3, collectionXY::seatBottomY + 70, arg);
+
 	arg->direction = 1;
 	arg->posY = collectionXY::nextY;
-	arg->rect.top = arg->posY;
-	arg->rect.right = arg->rect.left + carhorizon::width;
-	arg->rect.bottom = arg->rect.top + carhorizon::height;
-	Update();
-	releaseseat(arg->seat);
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carhorizon::width, carhorizon::height);
 	
-	move(arg, 3, collectionXY::cornerbottomX, STEP);
-
+	move(2, collectionXY::cornerbottomX, arg);
+	
 	//위로 방향전환
 	//충돌범위 변경	
 	arg->direction = 2;
-	arg->rect.right = arg->rect.left + carvertical::width;
-	arg->rect.bottom = arg->rect.top + carvertical::height;
-	
-	move(arg, 2, collectionXY::cashiernearY, STEP);
-
-	
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, carvertical::height);
+	move(1, collectionXY::cashiernearY, arg);
 }
 
 //step6 계산함
 void paytocashier(list<carArgument>::iterator arg)
 {
-	
 	watiAndcheckExited(T_waitCashier);
-	move(arg, 2, collectionXY::cashierY, STEP);
-
+	move(1, collectionXY::cashierY, arg);
 	ReleaseSemaphore(T_hiCashier, 1, NULL);
-
+	
 	//계산끝날때까지 대기
 	watiAndcheckExited(T_waitPay);
 	//차량인식기 올려도 된다고 신호보냄
 	ReleaseSemaphore(T_downCashier, 1, NULL);
-	
+		
 	//영화관 빠져나감
-	move(arg, 2, collectionXY::exitY, STEP);
+	move(1, collectionXY::exitY, arg);
 }
-
-
-//mode 1 : 왼쪽이동
-//mode 2 : 위로이동
-void move(list<carArgument>::iterator arg, int mode, int dstPostion, int step)
-{	
-	int *pos = NULL; //모드에 따라 좌표값을 포인터로 지정
-
-	switch (mode){
-	case 1: pos = &(arg->posX); step = -step; break; //왼쪽
-	case 3: pos = &(arg->posX); break;
-	case 2: pos = &(arg->posY); step = -step; break;
-	case 4: pos = &(arg->posY); break;
-	}
-
-	//왼쪽으로 이동
-	if (mode == 1)
-	{
-		while ((*pos) >= dstPostion)
-		{
-			if (!detcionMode1(arg->id, &(arg->rect)))
-			{
-				(*pos) += step;
-				arg->rect.left += step;
-				arg->rect.right += step;
-				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(speed));
-			}
-		}
-	}
-	//위로 이동
-	else if (mode == 2)
-	{
-		while ((*pos) >= dstPostion)
-		{
-			if (!detcionMode1(arg->id, &(arg->rect)))
-			{
-				(*pos) += step;
-				arg->rect.top += step;
-				arg->rect.bottom += step;
-				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(speed));
-			}
-		}
-	}
-	//오른쪽으로 이동
-	else if (mode == 3)
-	{
-		while ((*pos) <= dstPostion)
-		{
-			if (!detcionMode1(arg->id, &(arg->rect)))
-			{
-				(*pos) += step;
-				arg->rect.left += step;
-				arg->rect.right += step;
-
-				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(speed));
-			}
-		}
-	}
-	//아래로 이동
-	else if (mode == 4)
-	{
-		while ((*pos) <= dstPostion)
-		{
-			if (!detcionMode1(arg->id, &(arg->rect)))
-			{
-				(*pos) += step;
-				arg->rect.top += step;
-				arg->rect.bottom += step;
-
-				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(speed));
-			}
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////
-//충돌 체크 시작
-bool detcionMode1(int carID, RECT *src)
-{
-	bool r = false;
-
-	watiAndcheckExited(M_accessArg);
-	list < carArgument >::iterator End = L_carArg.end();
-	for (list<carArgument>::iterator iterPos = L_carArg.begin(); iterPos != End; iterPos++)
-	{
-		if (iterPos->id == carID)
-			continue;
-
-		if ((src->left < iterPos->rect.right) &&
-			(src->top < iterPos->rect.bottom) &&
-			(src->right > iterPos->rect.left) &&
-			(src->bottom > iterPos->rect.top))
-		{
-			if (carID < iterPos->id)			
-				r = false;
-			else
-				r = true;
-			break;
-		}
-	}
-
-
-	ReleaseMutex(M_accessArg);
-	return r;
-}
-
-//예상충돌
-bool predictdetcionMode(int carID, RECT *src)
-{
-	bool r = false;
-	RECT next;
-	next.left = src->left;
-	next.top = collectionXY::nextY;
-	next.right = next.left + carhorizon::width;
-	next.bottom = next.top + carhorizon::height;
-	
-	watiAndcheckExited(M_accessArg);
-	list < carArgument >::iterator End = L_carArg.end();
-	for (list<carArgument>::iterator iterPos = L_carArg.begin(); iterPos != End; iterPos++)
-	{
-		if (iterPos->id == carID)
-			continue;
-
-		if ((next.left < iterPos->rect.right) &&
-			(next.top < iterPos->rect.bottom) &&
-			(next.right > iterPos->rect.left) &&
-			(next.bottom > iterPos->rect.top))
-		{
-			if (next.right > iterPos->rect.left)
-				r = true;
-
-			break;
-		}
-	}
-
-
-	ReleaseMutex(M_accessArg);
-	return r;
-}
-//////////////////////////////////////////////////////
-//충돌 체크 끝
-//////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////
 //좌석 관련된 함수 시작
@@ -481,7 +373,6 @@ void releaseseat(int seat)
 	seats[seat] = false;
 	ReleaseMutex(M_accessSeat);
 }
-
 
 //////////////////////////////////////////////////////
 //좌석 관련된 함수 종료

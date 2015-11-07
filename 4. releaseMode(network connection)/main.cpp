@@ -168,10 +168,16 @@ extern	bool upReader;
 
 void drawOnMemory(char* Imagepath, HDC BackDC, HDC MemDC, int memoryX, int memoryY, int mode);
 void drawcar0(list<carArgument>::iterator arg, HDC bitDC, HDC memDC);
+void drawcar1(list<carArgument>::iterator arg, HDC bitDC, HDC memDC);
+void drawcar2(list<carArgument>::iterator arg, HDC bitDC, HDC memDC);
+void drawcar3(list<carArgument>::iterator arg, HDC bitDC, HDC memDC);
 
 void(*carfunc[sortOfcar])(list<carArgument>::iterator, HDC, HDC) =
 {
 	drawcar0,
+	drawcar1,
+	drawcar2,
+	drawcar3,
 };
 
 
@@ -261,4 +267,58 @@ void drawcar0(list<carArgument>::iterator arg, HDC bitDC, HDC memDC)
 			drawOnMemory(car0downImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
 	
 }
+
+void drawcar1(list<carArgument>::iterator arg, HDC bitDC, HDC memDC)
+{
+	//왼쪽
+	if (arg->direction == 0)
+		drawOnMemory(car1leftImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//오른쪽
+	else if (arg->direction == 1)
+		drawOnMemory(car1rightImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//위
+	if (arg->direction == 2)
+		drawOnMemory(car1upImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//아래
+	if (arg->direction == 3)
+		drawOnMemory(car1downImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+
+}
+
+void drawcar2(list<carArgument>::iterator arg, HDC bitDC, HDC memDC)
+{
+	//왼쪽
+	if (arg->direction == 0)
+		drawOnMemory(car2leftImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//오른쪽
+	else if (arg->direction == 1)
+		drawOnMemory(car2rightImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//위
+	if (arg->direction == 2)
+		drawOnMemory(car2upImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//아래
+	if (arg->direction == 3)
+		drawOnMemory(car2downImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+
+}
+
+void drawcar3(list<carArgument>::iterator arg, HDC bitDC, HDC memDC)
+{
+	//왼쪽
+	if (arg->direction == 0)
+		drawOnMemory(car3leftImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//오른쪽
+	else if (arg->direction == 1)
+		drawOnMemory(car3rightImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//위
+	if (arg->direction == 2)
+		drawOnMemory(car3upImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+	//아래
+	if (arg->direction == 3)
+		drawOnMemory(car3downImagePath, bitDC, memDC, arg->posX, arg->posY, 2);
+
+}
+
+
+
 

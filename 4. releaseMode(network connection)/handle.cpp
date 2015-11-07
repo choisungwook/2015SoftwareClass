@@ -30,6 +30,8 @@ HANDLE		T_downCashier;
 HANDLE		M_accessArg;
 HANDLE		M_accessSeat;
 HANDLE		M_accessCollsion;
+HANDLE		M_accesscarMap;
+HANDLE		M_accessCreate;
 
 //종료플래그
 extern	bool		exitFlag;
@@ -70,6 +72,8 @@ void initializeMutexs()
 	M_accessArg = CreateMutex(NULL, FALSE, NULL);
 	M_accessSeat = CreateMutex(NULL, FALSE, NULL);
 	M_accessCollsion = CreateMutex(NULL, FALSE, NULL);
+	M_accesscarMap = CreateMutex(NULL, FALSE, NULL);
+	M_accessCreate = CreateMutex(NULL, FALSE, NULL);
 }
 
 //파괴와 관련된 함수들
@@ -109,6 +113,8 @@ void destoryMutexs()
 	CloseHandle(M_accessArg);
 	CloseHandle(M_accessSeat);
 	CloseHandle(M_accessCollsion);
+	CloseHandle(M_accesscarMap);
+	CloseHandle(M_accessCreate);
 }
 
 void destoryHandles()
@@ -132,4 +138,6 @@ void AllActivateHandles()
 	ReleaseMutex(M_accessArg);
 	ReleaseMutex(M_accessSeat);
 	ReleaseMutex(M_accessCollsion);
+	ReleaseMutex(M_accesscarMap);
+	ReleaseMutex(M_accessCreate);
 }

@@ -5,10 +5,15 @@
 #include <ctime>
 #include <functional>
 #include <random>
+#include <map>
 using namespace std;
 
 //종료플래그
 extern	bool		exitFlag;
+extern	HANDLE		M_accesscarMap;
+//차 고유값 가지고 있는지 체크
+map<int, bool> carmap;
+
 
 void checkexited()
 {
@@ -34,4 +39,35 @@ unsigned int myrand(int max)
 	auto generator = bind(distribution, engine);
 
 	return generator();
+}
+
+
+void initializecarmap()
+{
+	carmap.clear();
+}
+
+//차 아이디 중복 검사 
+//중복이면 true
+bool checkduplication(int carID)
+{
+	bool r = false;
+
+	watiAndcheckExited(M_accesscarMap);
+	map<int, bool>::iterator findIter = carmap.find(carID);
+
+	if (findIter != carmap.end())
+		r = true;
+	else
+		carmap.insert(map<int, bool>::value_type(carID, false));
+
+	ReleaseMutex(M_accesscarMap);
+	return r;
+}
+
+void deletecarduplicate(int carID)
+{
+	watiAndcheckExited(M_accesscarMap);
+	carmap.erase(carID);
+	ReleaseMutex(M_accesscarMap);
 }

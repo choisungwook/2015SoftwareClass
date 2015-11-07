@@ -15,10 +15,24 @@
 #define	car0leftImagePath			"img\\car\\car0\\left.bmp"
 #define	car0upImagePath				"img\\car\\car0\\up.bmp"
 #define	car0downImagePath			"img\\car\\car0\\down.bmp"
+//////////////////////////
+#define	car1rightImagePath			"img\\car\\car1\\right.bmp"
+#define	car1leftImagePath			"img\\car\\car1\\left.bmp"
+#define	car1upImagePath				"img\\car\\car1\\up.bmp"
+#define	car1downImagePath			"img\\car\\car1\\down.bmp"
+//////////////////////////
+#define	car2rightImagePath			"img\\car\\car2\\right.bmp"
+#define	car2leftImagePath			"img\\car\\car2\\left.bmp"
+#define	car2upImagePath				"img\\car\\car2\\up.bmp"
+#define	car2downImagePath			"img\\car\\car2\\down.bmp"
+//////////////////////////
+#define	car3rightImagePath			"img\\car\\car3\\right.bmp"
+#define	car3leftImagePath			"img\\car\\car3\\left.bmp"
+#define	car3upImagePath				"img\\car\\car3\\up.bmp"
+#define	car3downImagePath			"img\\car\\car3\\down.bmp"
 
 
-
-#define sortOfcar				1
+#define sortOfcar				4
 #define	numOfseat				6
 #define numOfmovie				5
 

@@ -35,7 +35,7 @@ unsigned WINAPI readerThread(void *arg)
 		watiAndcheckExited(T_downReader);
 		//차량인식기 내림
 		upReader = false;
-		
+		Update();
 		
 		//다음차 오라고 신호를 줌
 		ReleaseSemaphore(T_waitReader, 1, NULL);

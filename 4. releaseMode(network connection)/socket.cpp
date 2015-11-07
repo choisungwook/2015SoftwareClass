@@ -70,3 +70,8 @@ void recvfromserver(int hsock)
 	
 	MessageBox(hWndMain, message, "OK", MB_OK);
 }
+
+void sendfromserver(SOCKET hsock, char *message)
+{
+	send(hsock, message, strlen(message), 0);
+}

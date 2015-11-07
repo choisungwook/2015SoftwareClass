@@ -7,5 +7,6 @@ void initializeWinsock();
 void destoryWinsock();
 SOCKET connect_Server();
 void recvfromserver(int hsock);
+void sendfromserver(SOCKET hsock, char *message);
 
 #endif

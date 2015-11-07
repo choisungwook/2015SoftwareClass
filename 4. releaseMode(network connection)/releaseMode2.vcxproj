@@ -82,9 +82,11 @@
   <ItemGroup>
     <ClCompile Include="carThread.cpp" />
     <ClCompile Include="cashierThread.cpp" />
+    <ClCompile Include="collsion.cpp" />
     <ClCompile Include="fileIO.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="move.cpp" />
     <ClCompile Include="readerThread.cpp" />
     <ClCompile Include="socket.cpp" />
     <ClCompile Include="utility.cpp" />
