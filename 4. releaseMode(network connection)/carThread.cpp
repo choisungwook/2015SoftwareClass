@@ -9,6 +9,7 @@
 #include <process.h>
 #include <algorithm>
 #include <stdio.h>
+#include <vector>
 
 #define STEP 10
 #define speed 5
@@ -45,7 +46,7 @@ extern void move(int opcode, int dst, list<carArgument>::iterator car);
 extern bool isempty(int index);
 extern void initializeCreateBuf();
 extern void releaseCreateBuf(int index);
-
+extern int movieNumber;
 list<carArgument>::iterator getArgumentaddress(int carID);
 
 void movetoReader(list<carArgument>::iterator arg);
@@ -62,6 +63,7 @@ void releaseseat(int seat);
 
 //영화를 선택함수
 int selectmovie();
+extern vector<movieTag> Movietag;
 
 unsigned WINAPI carThread(void *arg)
 {
@@ -204,8 +206,8 @@ void talktoReader(list<carArgument>::iterator arg)
 
 	//영화를고름
 	arg->movieID = selectmovie();
-	arg->moviePrice = 0;
-	arg->movieTime = 0;
+	arg->moviePrice = Movietag[arg->movieID].price;
+	arg->movieTime = Movietag[arg->movieID].time;
 	//좌석을고름
 	arg->seat = selectseat();
 
@@ -228,18 +230,16 @@ void talktoReader(list<carArgument>::iterator arg)
 	/*OutputDebugString(sendBuf);*/
 	send(s, sendBuf, sizeof(sendBuf), 0);
 	recv(s, recvBuf, sizeof(recvBuf), 0);	
-	sprintf(sendBuf, "Update.%d.1.%d.2.%d.3.%d-%d-%d %d시 %d분",
+	//차넘버, 차종류, 영화가격, 방문시간, 영화이름
+	sprintf(sendBuf, "Update.%d.1.%d.2.%d.3.%d-%d-%d %d시 %d분.4.%s",
 		arg->id, arg->sort, arg->moviePrice,
-		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min);
+		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min,
+		Movietag[arg->movieID].name);
 	send(s, sendBuf, sizeof(sendBuf), 0);
 	recv(s, recvBuf, sizeof(recvBuf), 0);
 	strcpy(sendBuf, "Disconnect");
 	send(s, sendBuf, sizeof(sendBuf), 0);
 	closesocket(s);
-
-
-
-
 
 	// 좌석과 영화를 골랐다는 신호를 줌
 	ReleaseSemaphore(T_selectReader, 1, NULL);
@@ -381,7 +381,7 @@ void releaseseat(int seat)
 //영화를 고름
 int selectmovie()
 {
-	int movie = myrand(numOfmovie);
+	int movie = myrand(Movietag.size());
 
 	return movie;
 }

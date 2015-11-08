@@ -7,6 +7,8 @@
 #include "fileIO.h"
 #include "utility.h"
 #include <list>
+#include <commctrl.h>
+#include <vector>
 using namespace std;
 
 #pragma comment (lib, "msimg32.lib")
@@ -14,6 +16,8 @@ using namespace std;
 //local 함수
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 //local 변수
 LPCTSTR			lpszClass = TEXT("WM_INITDIALOG2");
@@ -28,7 +32,7 @@ extern	int				numOfturnel;
 //종료플래그
 bool	exitFlag;
 
-
+vector<movieTag> Movietag;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance
 	, LPSTR lpszCmdParam, int nCmdShow)
@@ -99,6 +103,198 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
+void updateListview(HWND hDlg)
+{
+	LVITEM LI;
+	
+	HWND hwndList = GetDlgItem(hDlg, IDC_LIST1);
+
+	for (int i = 0; i < Movietag.size(); i++)
+	{
+		LI.mask = LVIF_TEXT;
+		LI.iItem = i;
+		LI.iSubItem = 0;
+		LI.iImage = 0;
+		LI.pszText = Movietag[i].name;
+		ListView_InsertItem(hwndList, &LI);
+
+		char buf[10];
+		LI.iSubItem = 1;
+		sprintf(buf, "%d", Movietag[i].price);
+		LI.pszText = buf;
+		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+
+		LI.iSubItem = 2;
+		sprintf(buf, "%d", Movietag[i].time);
+		LI.pszText = buf;
+		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+	}
+}
+
+VOID OnInitializeListView(HWND hDlg)
+{
+	LVCOLUMN lvc = { 0 };
+	INT nSubItem = 0;
+	HWND hWndHdr = NULL;
+	INT nCount = 0;
+
+	LPTSTR lpszTitle[] = { TEXT("영화이름"), TEXT("영화가격"), TEXT("영화시청시간")};
+	nCount = sizeof(lpszTitle) / sizeof(LPCTSTR);
+
+	HWND hwndList = GetDlgItem(hDlg, IDC_LIST1);
+
+	/* Initialize the LVCOLUMN structure. */
+	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+	lvc.iImage = 0;
+	lvc.cx = 100;
+
+	for (nSubItem = 0; nSubItem < nCount; ++nSubItem) {
+		lvc.iSubItem = nSubItem;
+		lvc.pszText = lpszTitle[nSubItem];
+		lvc.fmt = LVCFMT_LEFT;
+		ListView_InsertColumn(hwndList, lvc.iSubItem, &lvc);
+	}
+
+	updateListview(hDlg);
+	return;
+}
+
+void inputListview(HWND hDlg)
+{
+	bool flag = false;
+	LVITEM LI;
+	
+	HWND hwndList = GetDlgItem(hDlg, IDC_LIST1);
+
+	char moviename[20];
+	LI.mask = LVIF_TEXT;
+	LI.iSubItem = 0;
+	LI.iImage = 0;
+	LI.iItem = Movietag.size();
+	GetDlgItemText(hDlg, IDC_EDIT_MOVIE, moviename, sizeof(moviename));
+	//유형성검사
+	vector<movieTag>::iterator End = Movietag.end();
+	for (vector<movieTag>::iterator iterPos = Movietag.begin(); iterPos != End; iterPos++)
+	{
+		if (!strcmp(moviename, iterPos->name))
+		{
+			flag = true;
+			break;
+		}
+	}
+
+	if (!flag)
+	{
+		LI.pszText = moviename;
+		ListView_InsertItem(hwndList, &LI);
+
+		char buf[10];
+		int _price = myrand(10000);
+		LI.iSubItem = 1;
+		sprintf(buf, "%d", _price);
+		LI.pszText = buf;
+		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+
+		LI.iSubItem = 2;
+		int _time = myrand(10) + 10;
+		sprintf(buf, "%d", _time);
+		LI.pszText = buf;
+		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+
+		movieTag t;
+		strcpy(t.name, moviename);
+		t.price = _price;
+		t.time = _time;
+
+		Movietag.push_back(t);
+	}
+	else
+		MessageBox(hDlg, "이미 존재하는 영화입니다", "error", MB_OK);
+}
+
+BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	RECT wrt, crt;
+
+	switch (iMessage) {
+	case WM_INITDIALOG:
+		{
+			GetWindowRect(GetParent(hDlg), &wrt);
+			GetWindowRect(hDlg, &crt);
+			SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
+				wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
+			OnInitializeListView(hDlg);
+			return TRUE;
+		}
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case ID_MOVIE_OK:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		case ID_MOVIE_CANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		case IDC_BUTTON_ADD:
+			{
+				inputListview(hDlg); 
+				return TRUE;
+			}
+		case IDC_BUTTON_DEL:
+			{
+				LVITEM LI;
+
+				HWND hwndList = GetDlgItem(hDlg, IDC_LIST1);
+				int idx = ListView_GetNextItem(hwndList, -1, LVNI_ALL | LVNI_SELECTED);
+				if (idx == -1)
+					MessageBox(hDlg, "삭제할 항목을 먼저 선택하십시오", "error", MB_OK);
+				else
+				{
+					Movietag.erase(Movietag.begin() + idx);
+					ListView_DeleteItem(hwndList, idx);
+				}
+				break;
+			}
+			
+		}
+		break;
+	}
+	return FALSE;
+}
+
+extern int port;
+
+BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	RECT wrt, crt;
+
+	switch (iMessage) {
+	case WM_INITDIALOG:
+		GetWindowRect(GetParent(hDlg), &wrt);
+		GetWindowRect(hDlg, &crt);
+		SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
+			wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case ID_OPTION_OK:
+			port = GetDlgItemInt(hDlg, IDC_EDIT_PORT, NULL, FALSE);
+			if (!port)	port = 3333;
+			char buf[30];
+			sprintf(buf, "포트 : %d 설정완료", port);
+			MessageBox(hDlg, buf, "ok", MB_OK);
+			EndDialog(hDlg, 0);
+			return TRUE;
+
+		case ID_OPTION_CANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMessage) {
@@ -112,17 +308,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_START:
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, DlgProc);
 			break;
-		case ID_FILE_SAVE:
-			fileoutput();
-			break;
-		case ID_FILE_OPEN:
-			MessageBox(hWndMain, "준비중", "준비중", MB_OK);
-			break;
 		case ID_FILE_EXIT:
 			destoryThreads(); //핸들파괴
 			destoryHandles(); //쓰레드파괴
 			destoryWinsock(); //윈속종료
 			PostQuitMessage(0);
+			break;
+		case ID_FILE_MOVIE:
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_MOVIE), hWnd, MovieProc);
+			break;
+		case ID_TOSERVER_CHECK:
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_OPTION), hWnd, OptionProc);
 			break;
 		}
 		return 0;
@@ -153,6 +349,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	}
 	return(DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /////////////////////////////////////////////////////////////////
 //화면 출력에 관련된 함수들

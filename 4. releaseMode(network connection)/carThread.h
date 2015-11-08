@@ -19,6 +19,12 @@ typedef struct _carArg
 	int movieTime;
 }carArgument;
 
+typedef struct _movie
+{
+	char name[20];
+	int price;
+	int time;
+}movieTag;
 
 
 //ÇÔ¼ö

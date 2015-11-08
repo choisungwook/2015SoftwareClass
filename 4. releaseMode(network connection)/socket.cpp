@@ -14,7 +14,7 @@ bool _exitFlag;
 WSADATA wsaData;
 
 extern	HWND	hWndMain;
-int port = 3333;
+int port;
 
 void ErrorHandling(char* message)
 {	
