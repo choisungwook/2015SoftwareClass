@@ -31,7 +31,9 @@ extern	int				numOfturnel;
 
 //종료플래그
 bool	exitFlag;
-
+//시작플래그
+bool	movieFlag;
+bool	portFlag;
 vector<movieTag> Movietag;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance
@@ -68,6 +70,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance
 }
 
 
+void updateMenu()
+{
+	HMENU hMenu = GetMenu(hWndMain);
+	HMENU hMenu1 = GetSubMenu(hMenu, 0);
+
+	if (movieFlag && portFlag)
+		EnableMenuItem((HMENU)hMenu1, ID_FILE_START, MF_BYCOMMAND | MF_ENABLED);
+	else
+		EnableMenuItem((HMENU)hMenu1, ID_FILE_START, MF_BYCOMMAND | MF_GRAYED);
+	
+}
 BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	RECT wrt, crt;
@@ -229,11 +242,15 @@ BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case ID_MOVIE_OK:
-			EndDialog(hDlg, 0);
-			return TRUE;
 		case ID_MOVIE_CANCEL:
+			if (Movietag.size() > 0)
+			{					
+				movieFlag = true;
+			}
+			else
+				movieFlag = false;
 			EndDialog(hDlg, 0);
+			updateMenu();
 			return TRUE;
 		case IDC_BUTTON_ADD:
 			{
@@ -284,7 +301,9 @@ BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			char buf[30];
 			sprintf(buf, "포트 : %d 설정완료", port);
 			MessageBox(hDlg, buf, "ok", MB_OK);
+			portFlag = true;
 			EndDialog(hDlg, 0);
+			updateMenu();
 			return TRUE;
 
 		case ID_OPTION_CANCEL:
@@ -298,10 +317,20 @@ BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMessage) {
+	case WM_INITMENU:
+	{
+		updateMenu();
+		//EnableMenuItem((HMENU)wParam, ID_FILE_START, MF_BYCOMMAND|  MF_GRAYED | MF_ENABLED);
+		break;
+	}
 	case WM_CREATE:
-		initializeWinsock();
-		exitFlag = false;
-		return 0;
+		{		
+			initializeWinsock();
+			exitFlag = false;
+			movieFlag = false;
+			portFlag = false;
+			return 0;
+		}
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -314,7 +343,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			destoryWinsock(); //윈속종료
 			PostQuitMessage(0);
 			break;
-		case ID_FILE_MOVIE:
+		case ID_FILE_MOVIE: //영화입력
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_MOVIE), hWnd, MovieProc);
 			break;
 		case ID_TOSERVER_CHECK:
@@ -349,20 +378,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	}
 	return(DefWindowProc(hWnd, iMessage, wParam, lParam));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /////////////////////////////////////////////////////////////////
 //화면 출력에 관련된 함수들
