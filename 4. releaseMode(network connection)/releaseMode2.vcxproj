@@ -83,6 +83,7 @@
     <ClCompile Include="carThread.cpp" />
     <ClCompile Include="cashierThread.cpp" />
     <ClCompile Include="collsion.cpp" />
+    <ClCompile Include="cornerworker1.cpp" />
     <ClCompile Include="fileIO.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="main.cpp" />

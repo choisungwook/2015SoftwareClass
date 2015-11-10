@@ -19,10 +19,12 @@ bool seats[numOfseat];
 int numOfcar;
 int numOfturnel;
 
+
 //창 핸들
 extern	HWND			hWndMain;
 //쓰레드
 extern	list<HANDLE>	T_carThreads;
+extern HANDLE			M_corner1Wait;
 //뮤택스
 extern	HANDLE			M_accessArg;
 extern	HANDLE			M_accessSeat;
@@ -43,6 +45,7 @@ list<carArgument>		L_carArg;
 
 //움직임
 extern void move(int opcode, int dst, list<carArgument>::iterator car);
+extern bool PriorityRightCollision(int carID, RECT *src);
 extern bool isempty(int index);
 extern void initializeCreateBuf();
 extern void releaseCreateBuf(int index);
@@ -253,7 +256,7 @@ void talktoReader(list<carArgument>::iterator arg)
 	//인식기 내려도 된다고 신호를 줌
 	ReleaseSemaphore(T_downReader, 1, NULL);
 
-	move(1, collectionXY::cornerY, arg);
+	
 }
 
 //step3
@@ -261,6 +264,11 @@ void talktoReader(list<carArgument>::iterator arg)
 void movetoseat(list<carArgument>::iterator arg)
 {
 	int x;
+
+	//코너 대기
+	move(1, collectionXY::cornerY + 50, arg);	
+	watiAndcheckExited(M_corner1Wait);
+	move(1, collectionXY::cornerY, arg);
 
 	//오른쪽으로 방향전환 및 충돌체 크기 변경
 	arg->direction = 1;
@@ -277,6 +285,9 @@ void movetoseat(list<carArgument>::iterator arg)
 	case 5: x = collectionXY::seat5X; break;
 	}	
 	//좌석 x축까지 이동
+
+	move(2, collectionXY::seat0X, arg);
+	ReleaseMutex(M_corner1Wait);
 	move(2, x, arg);
 	
 	//아래로 방향전환 및 충돌체 크기 변경
@@ -301,6 +312,14 @@ void movetocashier(list<carArgument>::iterator arg)
 
 	releaseseat(arg->seat);
 
+	//충돌안할때까지 대기
+	RECT predict;
+	predict.left = arg->rect.left;
+	predict.top = arg->rect.top + 60;
+	predict.right = predict.left + carhorizon::width + 10;
+	predict.bottom = predict.top + carhorizon::height;
+
+	while (PriorityRightCollision(arg->id, &predict));
 	//예상충돌감지
 	move(3, collectionXY::seatBottomY + 70, arg);
 

@@ -1,27 +1,20 @@
-﻿Build started 2015-11-08 오후 7:20:44.
-     1>Project "C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\releaseMode2.vcxproj" on node 2 (Build target(s)).
+﻿Build started 2015-11-10 오후 5:15:49.
+     1>Project "C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\releaseMode2.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _MBCS /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
-         main.cpp
-     1>main.cpp(125): warning C4018: '<' : signed/unsigned mismatch
-     1>main.cpp(136): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _MBCS /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt carThread.cpp
+         carThread.cpp
+     1>carThread.cpp(233): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
-     1>main.cpp(141): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>carThread.cpp(241): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
-     1>main.cpp(207): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
-     1>main.cpp(213): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
-     1>main.cpp(218): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>carThread.cpp(244): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\string.h(112) : see declaration of 'strcpy'
-     1>main.cpp(262): warning C4101: 'LI' : unreferenced local variable
-     1>main.cpp(302): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\Release\releaseMode2.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\Release\releaseMode2.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\Release\releaseMode2.lib" /MACHINE:X86 /SAFESEH Release\releaseMode2.res
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\Release\releaseMode2.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\Release\releaseMode2.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\Release\releaseMode2.lib" /MACHINE:X86 /SAFESEH Release\releaseMode2.res
          Release\carThread.obj
          Release\cashierThread.obj
          Release\collsion.obj
+         Release\cornerworker1.obj
          Release\fileIO.obj
          Release\handle.obj
          Release\main.obj
@@ -31,9 +24,9 @@
          Release\utility.obj
          Generating code
          Finished generating code
-         releaseMode2.vcxproj -> C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\Release\releaseMode2.exe
-     1>Done Building Project "C:\Users\choisunguk\Desktop\수정중(네트워크 연결 작업중)\releaseMode2.vcxproj" (Build target(s)).
+         releaseMode2.vcxproj -> C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\Release\releaseMode2.exe
+     1>Done Building Project "C:\Users\choisunguk\Desktop\2015SoftwareClass-master\4. releaseMode(network connection)\releaseMode2.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.59
+Time Elapsed 00:00:01.61

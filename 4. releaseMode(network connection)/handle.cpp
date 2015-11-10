@@ -33,10 +33,14 @@ HANDLE		M_accessCollsion;
 HANDLE		M_accesscarMap;
 HANDLE		M_accessCreate;
 
+//코너 뮤텍스
+HANDLE		M_corner1Wait;
+
 //종료플래그
 extern	bool		exitFlag;
 extern	int			numOfturnel;
 
+extern unsigned WINAPI cornerworker1(void *arg);
 
 void createThreads()
 {
@@ -74,6 +78,7 @@ void initializeMutexs()
 	M_accessCollsion = CreateMutex(NULL, FALSE, NULL);
 	M_accesscarMap = CreateMutex(NULL, FALSE, NULL);
 	M_accessCreate = CreateMutex(NULL, FALSE, NULL);
+	M_corner1Wait = CreateMutex(NULL, FALSE, NULL);
 }
 
 //파괴와 관련된 함수들
@@ -88,6 +93,8 @@ void destoryThreads()
 		destorycarThread(); // 차쓰레드 종료
 		destoryReaderThread(); // 리더쓰레드 종료
 		destorycashierThread();
+		//코너 워커들 종료
+		TerminateThread(T_cornerworker1, 0);
 		TerminateThread(T_carController, 0);
 		CloseHandle(T_carController);
 		exitFlag = false;
@@ -115,6 +122,7 @@ void destoryMutexs()
 	CloseHandle(M_accessCollsion);
 	CloseHandle(M_accesscarMap);
 	CloseHandle(M_accessCreate);
+	CloseHandle(M_corner1Wait);
 }
 
 void destoryHandles()
@@ -140,4 +148,6 @@ void AllActivateHandles()
 	ReleaseMutex(M_accessCollsion);
 	ReleaseMutex(M_accesscarMap);
 	ReleaseMutex(M_accessCreate);
+	ReleaseMutex(M_corner1Wait);
+
 }
