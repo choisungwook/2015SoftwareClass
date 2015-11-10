@@ -45,9 +45,6 @@
     <ClCompile Include="collsion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cornerworker1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
