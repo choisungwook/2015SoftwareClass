@@ -43,9 +43,12 @@ extern	HANDLE			T_waitPay;
 extern	HANDLE			T_downCashier;
 //차인자
 list<carArgument>		L_carArg;
+//캐릭터인자
+list<Person*>			L_personArg;
 
 //움직임
 extern void move(int opcode, int dst, list<carArgument>::iterator car);
+extern void movecharacter(list<Person*>::iterator arg, int dst, int mode);
 extern bool PriorityRightCollision(int carID, RECT *src);
 extern bool isempty(int index);
 extern void initializeCreateBuf();
@@ -101,6 +104,8 @@ unsigned WINAPI createCarThreads(void *arg)
 
 	initializecarmap();
 	initializeCreateBuf();
+	L_carArg.clear();
+	L_personArg.clear();
 
 	//인자초기화
 	for (int i = 0; i < numOfcar; i++)
@@ -120,6 +125,8 @@ unsigned WINAPI createCarThreads(void *arg)
 		input.posY = collectionXY::createdY;		
 		
 		input.sort = myrand(sortOfcar);
+		//차량이벤트
+		input.movieEvent = 1;
 		//충돌영역
 		input.rect.left = input.posX;
 		input.rect.top = input.posY;
@@ -150,23 +157,6 @@ void destorycarThread()
 	T_carThreads.clear();
 }
 
-list<carArgument>::iterator getArgumentaddress(int carID)
-{
-	list<carArgument>::iterator r;
-
-	list<carArgument>::iterator end = L_carArg.end();
-
-	for (list<carArgument>::iterator iterPos = L_carArg.begin(); iterPos != end; iterPos++)
-	{
-		if (iterPos->id == carID)
-		{
-			r = iterPos;
-			break;
-		}
-	}
-	ReleaseMutex(M_accessArg);
-	return r;
-}
 
 ////step1
 ////차량인식기 근처까지이동
@@ -256,8 +246,6 @@ void talktoReader(list<carArgument>::iterator arg)
 	ReleaseSemaphore(T_countingturnel, 1, NULL);
 	//인식기 내려도 된다고 신호를 줌
 	ReleaseSemaphore(T_downReader, 1, NULL);
-
-	
 }
 
 //step3
@@ -297,11 +285,126 @@ void movetoseat(list<carArgument>::iterator arg)
 	move(3, collectionXY::seatY, arg);
 }
 
+list<carArgument>::iterator getArgumentaddress(int carID)
+{
+	list<carArgument>::iterator r;
+
+	list<carArgument>::iterator end = L_carArg.end();
+
+	for (list<carArgument>::iterator iterPos = L_carArg.begin(); iterPos != end; iterPos++)
+	{
+		if (iterPos->id == carID)
+		{
+			r = iterPos;
+			break;
+		}
+	}
+	ReleaseMutex(M_accessArg);
+	return r;
+
+}
+
+
+int destination[numOfseat][2] =
+{
+	{ collectionXYofChar::onlandcreatX0, collectionXYofChar::onbridgeX0 },
+	{ collectionXYofChar::onlandcreatX1, collectionXYofChar::onbridgeX1 },
+	{ collectionXYofChar::onlandcreatX2, collectionXYofChar::onbridgeX2 },
+	{ collectionXYofChar::onlandcreatX3, collectionXYofChar::onbridgeX3 },
+	{ collectionXYofChar::onlandcreatX4, collectionXYofChar::onbridgeX4 },
+	//{ collectionXYofChar::onlandcreatX5, 225 },
+};
+
+Person* createcharacter(int id, int pos)
+{	
+	int sortOfchar = myrand(numOfchar);
+	Person* newPerson = new Person(id, destination[pos][0], sortOfchar);
+	L_personArg.push_back(newPerson);
+
+	return newPerson;
+}
+
+void deletecharacter(Person* p)
+{
+	L_personArg.remove(p);
+}
+
+list<Person*>::iterator getaddressPerson(int id)
+{
+	list<Person*>::iterator r;
+
+	list<Person*>::iterator end = L_personArg.end();
+
+	for (list<Person*>::iterator iterPos = L_personArg.begin(); iterPos != end; iterPos++)
+	{
+		if ((*iterPos)->id == id)
+		{
+			r = iterPos;
+			break;
+		}
+	}
+	ReleaseMutex(M_accessArg);
+	return r;
+}
+
+//영화만 시청한다.
+void event1(int time, int id, int pos)
+{
+	//sleep
+	std::this_thread::sleep_for(std::chrono::milliseconds(time));
+}
+
+//영화절반 시청하고 매점을 간다
+void event2(int time, int id, int pos)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(time/2));
+	
+	Person *p = createcharacter(id, pos);
+	list<Person*>::iterator search = getaddressPerson(id);
+	
+	movecharacter(search, destination[pos][1], 1);	
+	movecharacter(search, collectionXYofChar::onshopfrontrY, 2);	
+	movecharacter(search, collectionXYofChar::onshopfrontrX, 1);
+	
+	deletecharacter(p);
+	//delete p;
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds(time/2));
+}
+
+//영화 절반 시청하고 화장실을 간다
+void event3(int time, int id, int pos)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(time / 2));
+	Person *p = createcharacter(id, pos);
+	list<Person*>::iterator search = getaddressPerson(id);
+
+	movecharacter(search, destination[pos][1], 1);
+	movecharacter(search, collectionXYofChar::ontoiletfrontrY, 2);
+	movecharacter(search, collectionXYofChar::ontoiletfrontrX, 1);
+
+	deletecharacter(p);
+	std::this_thread::sleep_for(std::chrono::milliseconds(time / 2));
+}
+
+void(*events[numOfevents])(int, int, int) =
+{
+	event1,
+	event2,
+	event3,
+};
+
 //step4
 //영화시청함
 void watchMovie(list<carArgument>::iterator arg)
 {
+	//영화이벤트 랜덤발생
+	arg->movieEvent = myrand(numOfevents);	
 
+	events[arg->movieEvent](arg->movieTime,arg->id, arg->seat);
+	
+	
+	
 }
 
 //step5

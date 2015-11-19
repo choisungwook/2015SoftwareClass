@@ -2,6 +2,8 @@
 #define __ENUM_H__
 
 #define backgroundImagePath			"img\\background.bmp"
+//터널
+#define turnelImagePath				"img\\turnel.bmp"
 //bottom Reader
 #define	carReaderDownImagePath		"img\\parkinggateDown2.bmp"
 #define carReaderUpImagePath		"img\\parkinggateUp2.bmp"
@@ -30,12 +32,33 @@
 #define	car3leftImagePath			"img\\car\\car3\\left.bmp"
 #define	car3upImagePath				"img\\car\\car3\\up.bmp"
 #define	car3downImagePath			"img\\car\\car3\\down.bmp"
+///캐릭터
+#define character1backimagePath		"img\\character\\char1\\back.bmp"
+#define character1rightimagePath	"img\\character\\char1\\right.bmp"
+#define character1leftimagePath		"img\\character\\char1\\left.bmp"
+#define character1frontimagePath	"img\\character\\char1\\front.bmp"
+
+#define character2backimagePath		"img\\character\\char2\\back.bmp"
+#define character2rightimagePath	"img\\character\\char2\\right.bmp"
+#define character2leftimagePath		"img\\character\\char2\\left.bmp"
+#define character2frontimagePath	"img\\character\\char2\\front.bmp"
+
+#define character3backimagePath		"img\\character\\char3\\back.bmp"
+#define character3rightimagePath	"img\\character\\char3\\right.bmp"
+#define character3leftimagePath		"img\\character\\char3\\left.bmp"
+#define character3frontimagePath	"img\\character\\char3\\front.bmp"
+
+#define character4backimagePath		"img\\character\\char4\\back.bmp"
+#define character4rightimagePath	"img\\character\\char4\\right.bmp"
+#define character4leftimagePath		"img\\character\\char4\\left.bmp"
+#define character4frontimagePath	"img\\character\\char4\\front.bmp"
 
 
 #define sortOfcar				4
 #define	numOfseat				6
 #define numOfmovie				5
-
+#define numOfevents				3
+#define numOfchar				4
 #include <string>
 
 enum Screen
@@ -90,6 +113,49 @@ namespace collectionXY
 		cashiernearY	= 150,
 		cashierY		= 100,
 		exitY			= -80,
+	};
+}
+
+namespace movie
+{
+	enum time
+	{
+		minTime = 3000,
+		randTime = 10000,
+	};
+}
+
+namespace collectionXYofChar
+{
+	enum destX
+	{
+		onlandcreatX0 = 190,
+		onbridgeX0 = 225,
+		onlandcreatX1 = 315,
+		onbridgeX1 = 355,
+		onlandcreatX2 = 440,
+		onbridgeX2 = 480,
+		onlandcreatX3 = 560,
+		onbridgeX3 = 600,
+		onlandcreatX4 = 685,
+		onbridgeX4 = 720,
+		
+		onshopfrontrX = 355,
+		onshopenterX = 355,
+		ontoiletfrontrX = 600,
+		ontoiletenterX = 600,
+		
+	};
+
+	enum destY
+	{
+		onlandcreatY = 380,
+	
+
+		onshopfrontrY = 160,
+		onshopenterY = 120,
+		ontoiletfrontrY = 160,
+		ontoiletenterY = 120,
 	};
 }
 

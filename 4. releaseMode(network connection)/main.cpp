@@ -36,6 +36,9 @@ bool	movieFlag;
 bool	portFlag;
 vector<movieTag> Movietag;
 
+//캐릭터 좌표 테스트
+int posX, posY;
+
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance
 	, LPSTR lpszCmdParam, int nCmdShow)
 {
@@ -209,7 +212,7 @@ void inputListview(HWND hDlg)
 		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
 
 		LI.iSubItem = 2;
-		int _time = myrand(10) + 10;
+		int _time = myrand(movie::randTime) + movie::minTime;
 		sprintf(buf, "%d", _time);
 		LI.pszText = buf;
 		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
@@ -317,6 +320,21 @@ BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMessage) {
+		//테스트 좌표
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_LEFT:
+			posX -= 5; break;
+		case VK_RIGHT:
+			posX += 5; break;
+		case VK_UP:
+			posY -= 5; break;
+		case VK_DOWN:
+			posY += 5; break;
+		}
+		Update();
+		break;
 	case WM_INITMENU:
 	{
 		updateMenu();
@@ -384,6 +402,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////
 //차인자
 extern list<carArgument>		L_carArg;
+extern list<Person*>				L_personArg;
 //뮤택스
 extern	HANDLE					M_accessArg;
 //상단 직원 차량인식기
@@ -445,8 +464,71 @@ void Update()
 	}
 	ReleaseMutex(M_accessArg);
 
+	//터널그리기
+	drawOnMemory(turnelImagePath, BitDC, MemDC, 125, 670, 2);
+
 	//다리 그리기
 	drawOnMemory(BridgeImagePath, BitDC, MemDC, 145, 245, 2);
+
+	//사람그리기
+	list<Person*>::iterator personEnd = L_personArg.end();
+	for (list<Person*>::iterator iterPos = L_personArg.begin(); iterPos != personEnd; iterPos++)
+	{
+		if ((*iterPos)->character == 1) //쵸파
+		{
+			if ((*iterPos)->direction == 1)
+				drawOnMemory(character1backimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 2)			
+				drawOnMemory(character1rightimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 3)
+				drawOnMemory(character1leftimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else
+				drawOnMemory(character1frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			
+		}
+		else if ((*iterPos)->character == 2) //쵸파
+		{
+			if ((*iterPos)->direction == 1)
+				drawOnMemory(character2backimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 2)
+				drawOnMemory(character2rightimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 3)
+				drawOnMemory(character2leftimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else
+				drawOnMemory(character2frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+		}
+		else if ((*iterPos)->character == 3) //쵸파
+		{
+			if ((*iterPos)->direction == 1)			
+				drawOnMemory(character3backimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 2)
+				drawOnMemory(character3rightimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 3)
+				drawOnMemory(character3leftimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else
+				drawOnMemory(character3frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);			
+		}
+		else
+		{
+			if ((*iterPos)->direction == 1)
+				drawOnMemory(character4backimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 2)
+				drawOnMemory(character4rightimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else if ((*iterPos)->direction == 3)
+				drawOnMemory(character4leftimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+			else
+				drawOnMemory(character4frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
+
+		}
+
+
+	}
+
+	//테스트 사람 그리기
+	/*drawOnMemory(character1backimagePath, BitDC, MemDC, posX, posY, 2);
+	char printMsg[100];
+	sprintf(printMsg, "x좌표 : %d y좌표 : %d\n", posX, posY);
+	OutputDebugString(printMsg);*/
 
 	//종료
 	DeleteDC(MemDC);

@@ -35,12 +35,6 @@ bool PriorityLeftCollision(int carID, RECT *src)
 		{
 			if (predict.left - iterPos->rect.left > 0)
 			{
-
-				char printbuf[100];
-				sprintf(printbuf,"%d와 %d 차량 충돌 발생 %d<-->%d",
-					carID, iterPos->id,
-					src->right, iterPos->rect.left);
-				OutputDebugString(printbuf);
 				r = true;
 			}
 			break;

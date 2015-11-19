@@ -13,6 +13,7 @@ extern HANDLE	M_accessCreate;
 
 void initializeCreateBuf();
 void move(int opcode, int dst, list<carArgument>::iterator car);
+void movecharacter(list<Person*>::iterator arg, int dst, int mode);
 
 //충돌체크 include
 extern bool PriorityLeftCollision(int carID, RECT *src);
@@ -58,7 +59,7 @@ void moveRight(int dst, list<carArgument>::iterator car)
 			SetRect(&car->rect, car->posX, car->posY, car->posX + carhorizon::width, car->posY + carhorizon::height);
 			Update();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
@@ -89,6 +90,62 @@ void move(int opcode, int dst, list<carArgument>::iterator car)
 {
 	moveFunc[opcode](dst, car);	
 }
+
+//1. 오른쪽
+//2. 위쪽
+//3. 왼쪽
+//4. 아래
+void movecharacter(list<Person*>::iterator arg, int dst,int mode)
+{
+	//모드 1이면 x축 관련
+	if (mode == 1)
+	{
+		if ((*arg)->posX > dst)
+		{
+			(*arg)->direction = 3;
+			while ((*arg)->posX > dst)
+			{
+				(*arg)->posX = (*arg)->posX - MOVESTEP;
+				Update();
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		}
+		else
+		{
+			(*arg)->direction = 2;
+			while ((*arg)->posX < dst)
+			{
+				(*arg)->posX = (*arg)->posX + MOVESTEP;
+				Update();
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		}
+	}
+	else
+	{
+		if ((*arg)->posY > dst)
+		{
+			(*arg)->direction = 1;
+			while ((*arg)->posY > dst)
+			{
+				(*arg)->posY = (*arg)->posY - MOVESTEP;
+				Update();
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		}
+		else
+		{
+			(*arg)->direction = 4;
+			while ((*arg)->posY < dst)
+			{
+				(*arg)->posY = (*arg)->posY + MOVESTEP;
+				Update();
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		}
+	}
+}
+
 
 //생성되는 위치 배열
 void initializeCreateBuf()

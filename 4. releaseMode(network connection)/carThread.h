@@ -11,6 +11,7 @@ typedef struct _carArg
 	RECT rect;
 	int sort;
 	int direction;
+	int movieEvent;
 	//좌석
 	unsigned int seat;
 	//영화
@@ -25,6 +26,38 @@ typedef struct _movie
 	int price;
 	int time;
 }movieTag;
+
+class Person
+{
+public:
+	int id;
+	int character;
+	int direction;
+	int posX;
+	int posY;
+
+	Person(int id,  int posX, int character)
+	{
+		this->id = id;
+		this->posX = posX;
+		this->character = character;
+		direction = 2;
+		posY = 380;
+	};
+};
+
+//typedef struct _cloud
+//{
+//	int id;
+//	int posx;
+//	int posY;
+//}Cloude;
+//
+//typedef struct _Texture
+//{
+//	int id;
+//	char txt[100];
+//}Texture;
 
 
 //함수
