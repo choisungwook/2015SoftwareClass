@@ -53,12 +53,17 @@
 #define character4leftimagePath		"img\\character\\char4\\left.bmp"
 #define character4frontimagePath	"img\\character\\char4\\front.bmp"
 
+#define cloudbackgroundPath			"img\\cloudbackground.bmp"
+#define cloud0						"img\\cloud\\0.bmp"
 
+
+#define TEXTSPEED				1000
 #define sortOfcar				4
 #define	numOfseat				6
 #define numOfmovie				5
 #define numOfevents				3
 #define numOfchar				4
+#define numOfCloud				5
 #include <string>
 
 enum Screen
@@ -139,6 +144,9 @@ namespace collectionXYofChar
 		onbridgeX3 = 600,
 		onlandcreatX4 = 685,
 		onbridgeX4 = 720,
+		onlandcreatX5 = 745,
+		onbridgeX5 = 720,
+
 		
 		onshopfrontrX = 355,
 		onshopenterX = 355,
@@ -159,4 +167,17 @@ namespace collectionXYofChar
 	};
 }
 
+namespace collectionXYcloud
+{
+	enum X
+	{
+		cloud0X = 30,
+		cloud1X = 60,
+	};
+	enum Y
+	{
+		cloud0Y = 620,
+		cloud1Y = 600,
+	};
+}
 #endif

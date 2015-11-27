@@ -1,5 +1,3 @@
-#include "socket.h"
-
 #pragma comment(lib, "ws2_32.lib")
 
 #include "socket.h"
@@ -36,7 +34,7 @@ void destoryWinsock()
 	WSACleanup();
 }
 
-SOCKET connect_Server()
+SOCKET openDB()
 {
 	SOCKADDR_IN servAddr;
 	SOCKET hsock;
@@ -58,20 +56,52 @@ SOCKET connect_Server()
 }
 
 #define BUFSIZE 1024
-void recvfromserver(int hsock)
+int recvfromDB(SOCKET hsock)
 {
 	char message[BUFSIZE];
-	int strLen;
+	int strLen, r;
 
 	strLen = recv(hsock, message, BUFSIZE - 1, 0);
 
 	if (strLen == -1)
-		ErrorHandling("read() error!");
+		ErrorHandling("read() error!");	
 	
-	MessageBox(hWndMain, message, "OK", MB_OK);
+	sscanf(message, "%d", &r);
+
+	return r;	
 }
 
-void sendfromserver(SOCKET hsock, char *message)
+//차량 번호가 서버에 있는지 체크
+void checkExisted(SOCKET hsock, int carID)
 {
-	send(hsock, message, strlen(message), 0);
+	char sendMessage[BUFSIZE];
+	sprintf(sendMessage, "Check.%d", carID);
+	send(hsock, sendMessage, strlen(sendMessage), 0);
+}
+
+//업데이트
+void UpdateDB(SOCKET hsock, const char* format, ...)
+{
+	va_list arglist;
+	char pharsingBuf[BUFSIZE];
+	char sendMessage[BUFSIZE] = "Update.";
+
+	va_start(arglist, format);
+	vsprintf(pharsingBuf, format, arglist);
+	va_end(arglist);
+
+	strcat(sendMessage, pharsingBuf);
+	//OutputDebugString(sendMessage);
+
+	send(hsock, sendMessage, strlen(sendMessage), 0);
+}
+
+//연결종료
+void closeDB(SOCKET hsock)
+{
+	char sendMessage[BUFSIZE];
+	sprintf(sendMessage, "Close");
+	send(hsock, sendMessage, strlen(sendMessage), 0);
+
+	closesocket(hsock);
 }

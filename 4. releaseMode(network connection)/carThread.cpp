@@ -54,6 +54,7 @@ extern bool isempty(int index);
 extern void initializeCreateBuf();
 extern void releaseCreateBuf(int index);
 extern int movieNumber;
+extern Cloud cloud[numOfCloud];
 list<carArgument>::iterator getArgumentaddress(int carID);
 
 void movetoReader(list<carArgument>::iterator arg);
@@ -198,42 +199,85 @@ void talktoReader(list<carArgument>::iterator arg)
 	
 	ReleaseSemaphore(T_hiReader, 1, NULL);
 
+	//서버접속
+	int recv;
+	SOCKET sock = openDB();
+	//서버에 내 정보가 등록되어 있는지 확인
+	checkExisted(sock, arg->id);
+	recv = recvfromDB(sock);
+	switch (recv)
+	{
+	case KEY_NOTFOUND://존재하지않음
+		{
+			char msg[100];
+			sprintf(msg, "%d님 처음 온 손님입니다", arg->id);
+			cloud[0].setstatus(true);
+			cloud[0].x = collectionXYcloud::cloud0X + 5; cloud[0].y = collectionXYcloud::cloud0Y;
+			cloud[0].settext(msg);
+			Update();
+			break;
+		}
+	default:
+		{
+			char msg[100];
+			sprintf(msg, "%d님 %d방문입니다", arg->id, recv + 1);
+			cloud[0].setstatus(true);
+			cloud[0].x = collectionXYcloud::cloud0X + 10; cloud[0].y = collectionXYcloud::cloud0Y;
+			cloud[0].settext(msg);
+			Update();
+			break;
+		}
+	}
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(TEXTSPEED));
+	cloud[0].setstatus(false);
+	Update();
+
 	//영화를고름
 	arg->movieID = selectmovie();
 	arg->moviePrice = Movietag[arg->movieID].price;
 	arg->movieTime = Movietag[arg->movieID].time;
+
+	char moviemsg[50];
+	sprintf(moviemsg, "%s 영화 선택", Movietag[arg->movieID].name);
+	cloud[1].x = collectionXYcloud::cloud1X; cloud[1].y = collectionXYcloud::cloud1Y;
+	cloud[1].settext(moviemsg);
+	cloud[1].setstatus(true);
+	Update();
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(TEXTSPEED));
+	cloud[1].setstatus(false);
+	
+	cloud[2].x = collectionXYcloud::cloud0X + 10; cloud[2].y = collectionXYcloud::cloud0Y;
+	cloud[2].settext("빈자리 탐색중 .....");
+	cloud[2].setstatus(true);
+	Update();
+
 	//좌석을고름
 	arg->seat = selectseat();
+	
+	char seatmsg[50];
+	sprintf(seatmsg, "%d 번으로 가세요", arg->seat + 1);
+	cloud[2].settext(seatmsg);
+	Update();
+	std::this_thread::sleep_for(std::chrono::milliseconds(TEXTSPEED));
+	cloud[2].setstatus(false);
+	Update();
 
-	//DB연결
 	//현재시간을 구함
 	time_t timer;
 	struct tm t;
 	timer = time(NULL); // 현재 시각을 초 단위로 얻기
 	localtime_s(&t, &timer); // 초 단위의 시간을 분리하여 구조체에 넣기
-	
-	//서버에 갱신
-	//서버연결
-	SOCKET s = connect_Server();
-	//제일 처음 회원등록이 있는지 확인
-	//없으면 등록 요청 
-	//있으면 정보 수정
-	char recvBuf[1024];
-	char sendBuf[1024];
-	sprintf(sendBuf, "Connect.%d", arg->id);	
-	/*OutputDebugString(sendBuf);*/
-	send(s, sendBuf, sizeof(sendBuf), 0);
-	recv(s, recvBuf, sizeof(recvBuf), 0);	
-	//차넘버, 차종류, 영화가격, 방문시간, 영화이름
-	sprintf(sendBuf, "Update.%d.1.%d.2.%d.3.%d-%d-%d %d시 %d분.4.%s",
+		
+	//업데이트
+	UpdateDB(sock, "%d.1.%d.2.%d.3.%d-%d-%d %d시 %d분.4.%s",
 		arg->id, arg->sort, arg->moviePrice,
 		t.tm_year + 1900, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min,
 		Movietag[arg->movieID].name);
-	send(s, sendBuf, sizeof(sendBuf), 0);
-	recv(s, recvBuf, sizeof(recvBuf), 0);
-	strcpy(sendBuf, "Disconnect");
-	send(s, sendBuf, sizeof(sendBuf), 0);
-	closesocket(s);
+	recvfromDB(sock);
+	//서버 접속 끊음
+	closeDB(sock);
 
 	// 좌석과 영화를 골랐다는 신호를 줌
 	ReleaseSemaphore(T_selectReader, 1, NULL);
@@ -312,6 +356,7 @@ int destination[numOfseat][2] =
 	{ collectionXYofChar::onlandcreatX2, collectionXYofChar::onbridgeX2 },
 	{ collectionXYofChar::onlandcreatX3, collectionXYofChar::onbridgeX3 },
 	{ collectionXYofChar::onlandcreatX4, collectionXYofChar::onbridgeX4 },
+	{ collectionXYofChar::onlandcreatX5, collectionXYofChar::onbridgeX5 },
 	//{ collectionXYofChar::onlandcreatX5, 225 },
 };
 
@@ -365,10 +410,20 @@ void event2(int time, int id, int pos)
 	movecharacter(search, destination[pos][1], 1);	
 	movecharacter(search, collectionXYofChar::onshopfrontrY, 2);	
 	movecharacter(search, collectionXYofChar::onshopfrontrX, 1);
-	
+	movecharacter(search, collectionXYofChar::onshopenterY, 2);
+
+	int backupX = (*search)->posX, backupY = (*search)->posY;
+	(*search)->posX = 1200; backupY = (*search)->posY = 1200;
+	Update();	
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	(*search)->posX = collectionXYofChar::onshopfrontrX; (*search)->posY = collectionXYofChar::onshopenterY;
+	movecharacter(search, collectionXYofChar::onshopfrontrY, 2);
+	movecharacter(search, destination[pos][1], 1);
+	movecharacter(search, collectionXYofChar::onlandcreatY, 2);
+	movecharacter(search, destination[pos][0], 1);
 	deletecharacter(p);
-	//delete p;
-	
+	Update();
+	//delete p;	
 	std::this_thread::sleep_for(std::chrono::milliseconds(time/2));
 }
 
@@ -382,8 +437,20 @@ void event3(int time, int id, int pos)
 	movecharacter(search, destination[pos][1], 1);
 	movecharacter(search, collectionXYofChar::ontoiletfrontrY, 2);
 	movecharacter(search, collectionXYofChar::ontoiletfrontrX, 1);
+	movecharacter(search, collectionXYofChar::ontoiletenterY, 2);
+
+	int backupX = (*search)->posX, backupY = (*search)->posY;	
+	(*search)->posX = 1200; backupY = (*search)->posY = 1200;
+	Update();	
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	(*search)->posX = collectionXYofChar::ontoiletfrontrX; (*search)->posY = collectionXYofChar::ontoiletenterY;
+	movecharacter(search, collectionXYofChar::ontoiletfrontrY, 2);
+	movecharacter(search, destination[pos][1], 1);
+	movecharacter(search, collectionXYofChar::onlandcreatY, 2);
+	movecharacter(search, destination[pos][0], 1);
 
 	deletecharacter(p);
+	Update();
 	std::this_thread::sleep_for(std::chrono::milliseconds(time / 2));
 }
 
@@ -402,9 +469,6 @@ void watchMovie(list<carArgument>::iterator arg)
 	arg->movieEvent = myrand(numOfevents);	
 
 	events[arg->movieEvent](arg->movieTime,arg->id, arg->seat);
-	
-	
-	
 }
 
 //step5
@@ -491,8 +555,7 @@ int selectseat()
 			seats[seat] = true;
 			ReleaseMutex(M_accessSeat);
 			return seat;
-		}
-		
+		}		
 	}
 }
 

@@ -10,10 +10,11 @@ class AVLNODE
 public:
 	int key;
 	int balance;
+	int visitCount;
 	carArgument Data;
 	AVLNODE* left, *right, *parent;
 
-	AVLNODE(int k, carArgument data, AVLNODE *p) : key(k), balance(0), parent(p), Data(data),
+	AVLNODE(int k, carArgument data, AVLNODE *p) : key(k), balance(0), parent(p), Data(data), visitCount(0),
 		left(0), right(0) {}
 
 	~AVLNODE()
@@ -37,11 +38,13 @@ private:
 	AVLNODE* rotateLeft(AVLNODE *a);
 	AVLNODE* rotateRightThenLeft(AVLNODE *n);
 public:
+	int getvisitCount();
 	AVLTree();
 	~AVLTree();
 	AVLNODE* getRoot();
 	AVLNODE* search(int key);	
 	bool insert(int key, carArgument data);
+	bool remove(int key);
 	void save(FILE* fp);
 	void update(AVLNODE* updateNode, int operate, void* data);
 };

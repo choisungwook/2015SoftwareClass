@@ -46,18 +46,22 @@ public:
 	};
 };
 
-//typedef struct _cloud
-//{
-//	int id;
-//	int posx;
-//	int posY;
-//}Cloude;
-//
-//typedef struct _Texture
-//{
-//	int id;
-//	char txt[100];
-//}Texture;
+class Cloud
+{
+private:
+	bool status;
+	char text[50];
+	char cloudpath[50];
+public:
+	int x, y;
+	Cloud() { status = false; };	
+	void setstatus(bool r)	{status = r;};
+	bool getstatus()	{ return status; };
+	void settext(char *msg){ strcpy(text, msg); };
+	char* gettext(){ return text; };	
+	void setcloud(char *path){ strcpy(cloudpath, path); };
+	char* getcloud(){ return cloudpath; };
+};
 
 
 //ÇÔ¼ö

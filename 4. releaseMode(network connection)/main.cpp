@@ -35,6 +35,7 @@ bool	exitFlag;
 bool	movieFlag;
 bool	portFlag;
 vector<movieTag> Movietag;
+Cloud cloud[numOfCloud];
 
 //캐릭터 좌표 테스트
 int posX, posY;
@@ -347,6 +348,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			exitFlag = false;
 			movieFlag = false;
 			portFlag = false;
+			cloud[0].setcloud(cloudbackgroundPath);
+			cloud[1].setcloud(cloud0);
+			cloud[2].setcloud(cloudbackgroundPath);
 			return 0;
 		}
 	case WM_COMMAND:
@@ -402,7 +406,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////
 //차인자
 extern list<carArgument>		L_carArg;
-extern list<Person*>				L_personArg;
+extern list<Person*>			L_personArg;
+
 //뮤택스
 extern	HANDLE					M_accessArg;
 //상단 직원 차량인식기
@@ -443,6 +448,23 @@ void Update()
 
 	//배경화면 그리기
 	drawOnMemory(backgroundImagePath, BitDC, MemDC, 0, 0, 1);
+
+	//말풍선
+	SetBkMode(MemDC, TRANSPARENT);
+	for (int i = 0; i < numOfCloud; i++)
+	{
+		if (cloud[i].getstatus())
+		{
+			//배경출력
+			drawOnMemory(cloud[i].getcloud(), BitDC, MemDC, cloud[i].x, cloud[i].y - 10, 2);
+			//글씨출력
+			if (i==1)
+				TextOut(MemDC, cloud[i].x, cloud[i].y + 10, cloud[i].gettext(), strlen(cloud[i].gettext()));
+			else
+				TextOut(MemDC, cloud[i].x, cloud[i].y, cloud[i].gettext(), strlen(cloud[i].gettext()));						
+		}
+	}
+
 
 	////차량인식기 그리기
 	if (upReader)
@@ -518,17 +540,14 @@ void Update()
 				drawOnMemory(character4leftimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
 			else
 				drawOnMemory(character4frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
-
 		}
-
-
 	}
 
-	//테스트 사람 그리기
-	/*drawOnMemory(character1backimagePath, BitDC, MemDC, posX, posY, 2);
-	char printMsg[100];
-	sprintf(printMsg, "x좌표 : %d y좌표 : %d\n", posX, posY);
-	OutputDebugString(printMsg);*/
+	//말풍선
+	/*SetBkMode(MemDC, TRANSPARENT);
+	TextOut(MemDC, posX, posY, "AAAAA", strlen("AAAAA"));*/
+	
+
 
 	//종료
 	DeleteDC(MemDC);

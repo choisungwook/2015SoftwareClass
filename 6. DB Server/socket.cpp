@@ -72,6 +72,14 @@ SOCKET serverSocket(int port)
 }
 
 #define BUFSIZE 1024
+void sendtoClnt(SOCKET clntsock, int Result)
+{
+	char sendmsg[BUFSIZE] = { 0, };
+	sprintf(sendmsg, "%d", Result);
+	send(clntsock, sendmsg, strlen(sendmsg), 0);
+}
+
+
 unsigned WINAPI serverWork(void *arg)
 {
 	int clntsock = *((int*)arg);
@@ -79,7 +87,11 @@ unsigned WINAPI serverWork(void *arg)
 
 	while (true)
 	{
-		int recvLen = recv(clntsock, recvBuf, sizeof(recvBuf), 0);
+		//상대방이 소켓을 끊은경우 또는 비정상적인 종료
+		if (recv(clntsock, recvBuf, sizeof(recvBuf), 0) == -1)
+		{
+			_endthreadex(0);
+		}
 
 		vector<string> tokenBuf;
 		regex re("[\\.]+");
@@ -89,20 +101,15 @@ unsigned WINAPI serverWork(void *arg)
 
 		if (FunctionSetFinder != functionset.end())
 		{
-			clntsockData sockData;
-			sockData.hsock = clntsock;
-
-			//DebugFunc("find command");
-			void(*Func)(int, vector<string> &);
+			int(*Func)(int, vector<string> &);
 			Func = FunctionSetFinder->second;
 			tokenBuf.erase(tokenBuf.begin());
-			Func(clntsock, tokenBuf);
+			int result = Func(clntsock, tokenBuf);
 
-			//다음 대기
-			char sendBuf[] = "continue";
-			send(clntsock, sendBuf, strlen(sendBuf), 0);
+			//결과값전송
+			sendtoClnt(clntsock, result);			
 		}
-		else
+		else //존재하지 않는 명령어일 경우 소켓/쓰레드 종료
 		{
 			closesocket(clntsock);
 			_endthreadex(0);
@@ -111,43 +118,6 @@ unsigned WINAPI serverWork(void *arg)
 	return 0;
 }
 
-//#define BUFSIZE 1024
-//void serverWork(int clntsock)
-//{
-//	char recvBuf[BUFSIZE] = { 0, };
-//
-//	while (true)
-//	{
-//		int recvLen = recv(clntsock, recvBuf, sizeof(recvBuf), 0);
-//		vector<string> tokenBuf;
-//		regex re("[\\.]+");
-//		token(re, recvBuf, tokenBuf);
-//
-//		FunctionSetFinder = functionset.find(tokenBuf[0]);
-//
-//		if (FunctionSetFinder != functionset.end())
-//		{
-//			clntsockData sockData;
-//			sockData.hsock = clntsock;
-//
-//			//DebugFunc("find command");
-//			void(*Func)(int, vector<string> &);
-//			Func = FunctionSetFinder->second;
-//			tokenBuf.erase(tokenBuf.begin());
-//			Func(clntsock, tokenBuf);
-//
-//			//다음 대기
-//			char sendBuf[] = "continue";
-//			send(clntsock, sendBuf, strlen(sendBuf), 0);
-//		}
-//		else
-//		{
-//			//closesocket(clntsock);
-//			break;
-//		}
-//	}
-//
-//}
 
 SOCKET accept(int servsock)
 {

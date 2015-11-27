@@ -116,8 +116,7 @@ AVLNODE* AVLTree::rotateRightThenLeft(AVLNODE *n)
 	return rotateLeft(n);
 }
 
-//재귀방식은 매우 비효율적이므로
-//반복문으로 대체하는 삽입 알고리즘을 구성한다.
+//insert내부의 재귀 방식은 비효율이므로 다른 함수로 대체한다.
 bool AVLTree::insert(int key, carArgument data)
 {
 	access.lock();
@@ -161,6 +160,54 @@ bool AVLTree::insert(int key, carArgument data)
 
 	access.unlock();
 	return true;
+}
+
+//트리가 비어있으면 삭제못함
+//또는 찾는 키값이 존재 하지 않음
+bool AVLTree::remove(int key) {
+	bool r = false;
+
+	if (root == NULL)
+		return r;
+
+	access.lock();
+
+	AVLNODE *n = root,
+			*parentNode = root,
+			*delNode = NULL,
+			*childNode = root;
+
+	while (childNode != NULL) {
+		parentNode = n;
+		n = childNode;
+		childNode = key >= n->key ? n->right : n->left;
+		if (key == n->key)
+			delNode = n;
+	}
+
+	if (delNode != NULL) {
+		delNode->key = n->key;
+
+		childNode = n->left != NULL ? n->left : n->right;
+
+		if (root->key == key) {
+			root = childNode;
+		}
+		else {
+			if (parentNode->left == n) {
+				parentNode->left = childNode;
+			}
+			else {
+				parentNode->right = childNode;
+			}
+			reBalance(parentNode);
+		}
+		r = true;
+	}
+	
+	access.unlock();
+
+	return r;
 }
 
 //탐색
@@ -267,4 +314,12 @@ AVLTree::~AVLTree()
 AVLNODE* AVLTree::getRoot()
 {
 	return root;
+}
+
+//////////////////////////////////////
+//데이터 얻기
+
+int AVLTree::getvisitCount()
+{
+	return root->visitCount;
 }

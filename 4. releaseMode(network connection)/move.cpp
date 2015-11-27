@@ -105,9 +105,9 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 			(*arg)->direction = 3;
 			while ((*arg)->posX > dst)
 			{
-				(*arg)->posX = (*arg)->posX - MOVESTEP;
+				(*arg)->posX = (*arg)->posX - 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 		else
@@ -115,9 +115,9 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 			(*arg)->direction = 2;
 			while ((*arg)->posX < dst)
 			{
-				(*arg)->posX = (*arg)->posX + MOVESTEP;
+				(*arg)->posX = (*arg)->posX + 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 	}
@@ -128,9 +128,9 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 			(*arg)->direction = 1;
 			while ((*arg)->posY > dst)
 			{
-				(*arg)->posY = (*arg)->posY - MOVESTEP;
+				(*arg)->posY = (*arg)->posY - 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 		else
@@ -138,9 +138,9 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 			(*arg)->direction = 4;
 			while ((*arg)->posY < dst)
 			{
-				(*arg)->posY = (*arg)->posY + MOVESTEP;
+				(*arg)->posY = (*arg)->posY + 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 	}
