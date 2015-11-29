@@ -68,6 +68,8 @@ void paytocashier(list<carArgument>::iterator arg);
 bool isSeatempty(int seat);
 int selectseat();
 void releaseseat(int seat);
+int mincarnumber = DEFAULTCARMIN;
+int maxcarnumber = DEFAULTCARMAX;
 
 //영화를 선택함수
 int selectmovie();
@@ -115,7 +117,7 @@ unsigned WINAPI createCarThreads(void *arg)
 		memset(&input, 0, sizeof(input));
 		do
 		{
-			input.id = myrand(50);
+			input.id = myrand(maxcarnumber) + mincarnumber + 1;
 		} while (checkduplication(input.id));
 		
 		//생성되는 위치		

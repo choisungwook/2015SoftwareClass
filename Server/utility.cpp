@@ -9,8 +9,12 @@ using namespace std;
 ////////////////////////////////////////
 
 void token(regex &re, string msg, vector<string> &a);
-void DebugFunc(TCHAR *pszErr, ...);
 
+/*
+@[0] match
+@[1] in
+@[2] out
+*/
 void token(regex &re, string msg, vector<string> &a)
 {
 	sregex_token_iterator it(msg.begin(), msg.end(), re, -1);
@@ -21,15 +25,4 @@ void token(regex &re, string msg, vector<string> &a)
 	}
 }
 
-void DebugFunc(TCHAR *pszErr, ...)
-{
-	
-	static CString strErr;
-	va_list ap;
-	va_start(ap, pszErr);
-	strErr.FormatV(pszErr, ap);
-	va_end(ap);
-	
-	OutputDebugString(("(Program Name) : ") + strErr);
-}
 

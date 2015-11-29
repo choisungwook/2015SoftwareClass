@@ -9,11 +9,14 @@
 #include <thread>
 #include <fstream>
 #include <random>
+#include <regex>
+#include <vector>
 using namespace std;
 
 #define WIDTH 300
 #define HEIGHT 100
 #define CARIDSIZE 5
+#define DEFAULTPORT 3333
 
 BOOL CALLBACK TreeOutputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK TreeInputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
@@ -28,8 +31,8 @@ LPSTR lpszClass = "Server";
 extern void Filesave(char* path);
 extern void Fileopen(char *path);
 extern void printPretty(AVLNODE *root, int level, int indentSpace, std::ostream& out);
+extern void token(regex &re, string msg, vector<string> &a);
 
-extern void DebugFunc(TCHAR *pszErr, ...);
 extern AVLTree car;
 int movieNumber; 
 list<string> movielist;
@@ -133,9 +136,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_SERVER_STOP://서버중지
 			if(destoryServerThread())
-				MessageBox(hWnd, "서버종료가 정상적으로 종료됬습니다", "exit", MB_OK);
+				MessageBox(hWnd, "server successfully finish", "exit", MB_OK);
 			else
-				MessageBox(hWnd, "해당서버가 없습니다.", "exit", MB_OK);
+				MessageBox(hWnd, "server is stopped", "stopped", MB_OK);
 			break;
 		case ID_DATA_PRETTY:
 			{
@@ -144,6 +147,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				fout.close();
 
 				WinExec("notepad.exe tree_pretty.txt", SW_NORMAL);
+				break;
+			}
+		case ID_SERVER_STATUS:
+			{
+				if (statusSevrer())									
+					MessageBox(tmphWnd, "server is running...", "ruuning", MB_OK);
+				
+				else
+					MessageBox(tmphWnd, "server is stopped...", "stopped", MB_OK);
 				break;
 			}
 		case ID_DATA_RAND:
@@ -160,7 +172,6 @@ BOOL CALLBACK TreeOutputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPa
 {
 	//RECT wrt, crt;
 	 
-
 	if (iMessage == WM_INITDIALOG)
 	{
 		/*GetWindowRect(GetParent(hDlg), &wrt);
@@ -196,16 +207,59 @@ BOOL CALLBACK TreeOutputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPa
 		SetFocus(hwndList);		
 		return TRUE;
 	}
+	
 	else if (iMessage == WM_COMMAND)
 	{
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
 		case IDOK:
 		{			
 			EndDialog(hDlg, 0);
 			return TRUE;
 		}
-		case IDC_LIST_CARID: //리스트이벤트
+		case IDC_BUTTON_DEL:
+		{
+			char selectcar[CARIDSIZE] = { 0, };
+			int index;
+			HWND hwndList = GetDlgItem(hDlg, IDC_LIST_CARID);
+
+			//get data
+			int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);			
+			SendMessage(hwndList, LB_GETTEXT, (WPARAM)lbItem, (LPARAM)selectcar);
+			sscanf(selectcar, "%d", &index);
+			
+			//remove key
+			SendMessage(hwndList, LB_DELETESTRING, lbItem, 0);
+			
+			car.remove(index);
+			break;
+		}
+		//seasrch
+		case IDC_BUTTON_SEARCH:
+		{
+			HWND hwndList = GetDlgItem(hDlg, IDC_LIST_CARID);
+
+			char searchData[20];
+			GetDlgItemText(hDlg, IDC_EDIT_SEARCH, searchData, sizeof(searchData));
+
+			if (!strlen(searchData))			
+				MessageBox(tmphWnd, "Please input at least one", "error", MB_OK);
+			else
+			{
+				int r = SendMessage(hwndList, LB_FINDSTRINGEXACT, -1, (LPARAM)searchData);
+
+				if (r == -1)
+					MessageBox(tmphWnd, "Not found", "error", MB_OK);
+				else
+					SendMessage(hwndList, LB_SETCURSEL, (WPARAM)r, 0);
+			}			
+
+			break;
+		}			
+		case IDC_LIST_CARID: 
 			switch (HIWORD(wParam))
 			{
 			case LBN_SELCHANGE:
@@ -214,22 +268,22 @@ BOOL CALLBACK TreeOutputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPa
 					int index;
 					HWND hwndList = GetDlgItem(hDlg, IDC_LIST_CARID);
 
-					//인덱스번호 얻어옴
-					int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);
-					//데이터 얻어옴					
+					//get data
+					int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);								
 					SendMessage(hwndList, LB_GETTEXT, (WPARAM)lbItem, (LPARAM)selectcar);					
 					sscanf(selectcar, "%d", &index);
 
+					//search Data
 					AVLNODE* finder =  car.search(index);
 					
 					if (finder)
 					{
-						SetDlgItemInt(hDlg, IDC_EDIT_sort, finder->Data.carnumber, TRUE); //차종류
-						SetDlgItemInt(hDlg, IDC_EDIT_PRICE, finder->Data.totalPrice, TRUE); //총금액
-						SetDlgItemText(hDlg, IDC_EDIT_LASTVISIT, finder->Data.lastVisit.c_str()); //마지막방문날짜
-						SetDlgItemInt(hDlg, IDC_EDIT_TIME, finder->Data.totalmovieTime, TRUE); //영화시간
+						SetDlgItemInt(hDlg, IDC_EDIT_sort, finder->Data.carnumber, TRUE); //sort of car
+						SetDlgItemInt(hDlg, IDC_EDIT_PRICE, finder->Data.totalPrice, TRUE); //total price
+						SetDlgItemText(hDlg, IDC_EDIT_LASTVISIT, finder->Data.lastVisit.c_str()); //lastvisit
+						SetDlgItemInt(hDlg, IDC_EDIT_TIME, finder->Data.totalmovieTime, TRUE); //total movie time
 
-						////영화목록
+						//show movie list
 						int ListNumber = 0;
 						HWND MovieListhWnd = GetDlgItem(hDlg, IDC_LIST_MOVIE);
 						SendMessage(MovieListhWnd, LB_RESETCONTENT, 0, 0);
@@ -238,12 +292,12 @@ BOOL CALLBACK TreeOutputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPa
 							iterPos != End; iterPos++)
 						{
 							int pos = (int)SendMessage(MovieListhWnd, LB_ADDSTRING, 0, (LPARAM)iterPos->c_str());
-							SendMessage(MovieListhWnd, LB_SETITEMDATA, pos, (LPARAM)ListNumber++); //데이터 추가
+							SendMessage(MovieListhWnd, LB_SETITEMDATA, pos, (LPARAM)ListNumber++); 
 						}		
 					}				
 					
 					break;
-				}
+				}				
 			}
 			break;
 		}		
@@ -271,6 +325,9 @@ BOOL CALLBACK TreeInputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPar
 		
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
 		case ID_INPUT_OK:
 			{
 				int numOfcar = 0, numOfsort, totalPrice = 0, totalTime = 0;
@@ -295,14 +352,14 @@ BOOL CALLBACK TreeInputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPar
 				EndDialog(hDlg, 0);
 				break;
 			}
-		case IDC_BUTTON_MOVIE_ADD: //영화입력
+		case IDC_BUTTON_MOVIE_ADD: //add movie
 			{
 				char buf[100]; 
 				HWND hwndList = GetDlgItem(hDlg, IDC_LIST_MOVIELIST);
 				GetDlgItemText(hDlg, IDC_EDIT_INPUT_MOVIE, buf, sizeof(buf));
 				int pos = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)buf);
-				SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)movieNumber++); //데이터 추가
-				//리스트 추가				
+				SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)movieNumber++); 
+				//add list
 				movielist.push_back(buf);
 				break;
 			}
@@ -310,13 +367,12 @@ BOOL CALLBACK TreeInputProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPar
 			{
 				char deletemovie[100];
 				HWND hwndList = GetDlgItem(hDlg, IDC_LIST_MOVIELIST);
-				//인덱스번호 얻어옴
+				//get data
 				int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 				SendMessage(hwndList, LB_GETTEXT, (WPARAM)lbItem, (LPARAM)deletemovie);
-				//데이터삭제
-				SendMessage(hwndList, LB_DELETESTRING, lbItem, 0);
-				//리스트삭제
-				movielist.remove(deletemovie);
+				//remove data
+				SendMessage(hwndList, LB_DELETESTRING, lbItem, 0);				
+				movielist.remove(deletemovie); //remove list
 				break;
 			}
 		}
@@ -336,17 +392,20 @@ BOOL CALLBACK ServerStartProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 		SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
 		wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
 		*/
-
+		SetDlgItemInt(hDlg, IDC_EDIT_PORT, DEFAULTPORT, FALSE);
 		return TRUE;
 	}
 
 	else if (iMessage == WM_COMMAND)
-	{
-
+	{		
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
 		case ID_BUTTON_START:
 		{
+			
 			int port = GetDlgItemInt(hDlg, IDC_EDIT_PORT, NULL, FALSE);
 			serverThread = (HANDLE)_beginthreadex(0, 0, startServer, (void*)&port, 0, 0);
 			EndDialog(hDlg, 0);
@@ -359,6 +418,23 @@ BOOL CALLBACK ServerStartProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 		return TRUE;
 	}
 	return FALSE;
+}
+
+
+int validateinput(string in)
+{
+	if (in.length() == 0)
+		return -1;
+
+	regex re("\\d+");
+
+	if (regex_match(in, re))
+	{
+		int r;
+		sscanf(in.c_str(), "%d", &r);
+		return r;
+	}
+	return -1;
 }
 
 BOOL CALLBACK ServerRandProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -380,24 +456,62 @@ BOOL CALLBACK ServerRandProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lPa
 	{
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
 		case ID_RAND_OK:
 		{
-			int n = GetDlgItemInt(hDlg, IDC_EDIT_RAND_NUMBER, NULL, FALSE);
-			int min = GetDlgItemInt(hDlg, IDC_EDIT_RAND_MIN, NULL, FALSE);
-			int max = GetDlgItemInt(hDlg, IDC_EDIT_RAND_MAX, NULL, FALSE);
+			char value[10] = { 0, };
+			int min, max, n;
 
-			mt19937 engine((unsigned int)time(NULL));                    // MT19937 난수 엔진
-			uniform_int_distribution<int> distribution(min, max);       // 생성 범위
-			auto generator = bind(distribution, engine);
+			GetDlgItemText(hDlg, IDC_EDIT_RAND_NUMBER, value, sizeof(value)); 
 
-			for (int i = 0; i < n; i++)
+			if ( (n = validateinput(value)) == -1)
+				MessageBox(tmphWnd, "can't input character or blank", "error", MB_OK);
+			else
 			{
-				int carnumber = generator();
-				carArgument t(carnumber);
-				car.insert(carnumber, t);
+				
+				GetDlgItemText(hDlg, IDC_EDIT_RAND_MIN, value, sizeof(value));
+
+				if ((min = validateinput(value)) == -1)
+					MessageBox(tmphWnd, "can't input character or blank", "error", MB_OK);
+				else
+				{					
+					GetDlgItemText(hDlg, IDC_EDIT_RAND_MAX, value, sizeof(value));
+
+					if ((max = validateinput(value)) == -1)
+						MessageBox(tmphWnd, "can't input character or blank", "error", MB_OK);
+					else
+					{
+						char buf[100];
+						sprintf(buf, "%d %d %d", n, min, max);
+						OutputDebugString(buf);
+						if (min > max)
+							MessageBox(tmphWnd, "MIN must be less than MAX", "error", MB_OK);
+						else
+						{
+							int successCount = 0;
+
+							mt19937 engine((unsigned int)time(NULL));
+							uniform_int_distribution<int> distribution(min, max);
+							auto generator = bind(distribution, engine);
+
+							for (int i = 0; i < n; i++)
+							{
+								int carnumber = generator();
+								carArgument t(carnumber);								
+								if (car.insert(carnumber, t))
+									successCount++;
+							}	
+
+							char resultmsg[100]; sprintf(resultmsg, "%d 생성했습니다", successCount);
+							MessageBox(tmphWnd, resultmsg, "success", MB_OK);
+						}
+					}
+				}
 			}
-			MessageBox(hDlg, "입력 성공", "OK", MB_OK);
-			EndDialog(hDlg, 0);
+					
+			
 			break;
 		}
 		case ID_RAND_CANCEL:

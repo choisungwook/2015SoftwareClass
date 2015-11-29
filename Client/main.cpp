@@ -9,6 +9,7 @@
 #include <list>
 #include <commctrl.h>
 #include <vector>
+#include <regex>
 using namespace std;
 
 #pragma comment (lib, "msimg32.lib")
@@ -18,9 +19,10 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK CarOptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 //local 변수
-LPCTSTR			lpszClass = TEXT("WM_INITDIALOG2");
+LPCTSTR			lpszClass = TEXT("3조 소프트웨어설계");
 HINSTANCE		g_hInst;
 HWND			hWndMain;
 HBITMAP			hbackbit; //백버퍼
@@ -99,6 +101,9 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
 		case IDC_OK:	
 			destoryThreads(); //쓰레드파괴
 			destoryHandles(); //핸들파괴
@@ -160,7 +165,6 @@ VOID OnInitializeListView(HWND hDlg)
 
 	HWND hwndList = GetDlgItem(hDlg, IDC_LIST1);
 
-	/* Initialize the LVCOLUMN structure. */
 	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	lvc.iImage = 0;
 	lvc.cx = 100;
@@ -176,6 +180,19 @@ VOID OnInitializeListView(HWND hDlg)
 	return;
 }
 
+bool checkWhiteSpace(string in)
+{
+	if (in.length() == 0)
+		return false;
+
+	regex re("\\w+");
+
+	if (regex_match(in, re))	
+		return true;
+	
+	return false;
+}
+
 void inputListview(HWND hDlg)
 {
 	bool flag = false;
@@ -189,44 +206,52 @@ void inputListview(HWND hDlg)
 	LI.iImage = 0;
 	LI.iItem = Movietag.size();
 	GetDlgItemText(hDlg, IDC_EDIT_MOVIE, moviename, sizeof(moviename));
-	//유형성검사
-	vector<movieTag>::iterator End = Movietag.end();
-	for (vector<movieTag>::iterator iterPos = Movietag.begin(); iterPos != End; iterPos++)
+
+	//check white space
+	if(checkWhiteSpace(moviename))
 	{
-		if (!strcmp(moviename, iterPos->name))
+		//check duplication
+		vector<movieTag>::iterator End = Movietag.end();
+		for (vector<movieTag>::iterator iterPos = Movietag.begin(); iterPos != End; iterPos++)
 		{
-			flag = true;
-			break;
+			if (!strcmp(moviename, iterPos->name))
+			{
+				flag = true;
+				break;
+			}
 		}
-	}
 
-	if (!flag)
-	{
-		LI.pszText = moviename;
-		ListView_InsertItem(hwndList, &LI);
+		if (!flag)
+		{
+			LI.pszText = moviename;
+			ListView_InsertItem(hwndList, &LI);
 
-		char buf[10];
-		int _price = myrand(10000);
-		LI.iSubItem = 1;
-		sprintf(buf, "%d", _price);
-		LI.pszText = buf;
-		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+			char buf[10];
+			int _price = myrand(10000);
+			LI.iSubItem = 1;
+			sprintf(buf, "%d", _price);
+			LI.pszText = buf;
+			SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
 
-		LI.iSubItem = 2;
-		int _time = myrand(movie::randTime) + movie::minTime;
-		sprintf(buf, "%d", _time);
-		LI.pszText = buf;
-		SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
+			LI.iSubItem = 2;
+			int _time = myrand(movie::randTime) + movie::minTime;
+			sprintf(buf, "%d", _time);
+			LI.pszText = buf;
+			SendMessage(hwndList, LVM_SETITEM, 0, (LPARAM)&LI);
 
-		movieTag t;
-		strcpy(t.name, moviename);
-		t.price = _price;
-		t.time = _time;
+			movieTag t;
+			strcpy(t.name, moviename);
+			t.price = _price;
+			t.time = _time;
 
-		Movietag.push_back(t);
+			Movietag.push_back(t);
+		}
+		else
+			MessageBox(hDlg, "이미 존재하는 영화입니다", "error", MB_OK);
 	}
 	else
-		MessageBox(hDlg, "이미 존재하는 영화입니다", "error", MB_OK);
+		MessageBox(hDlg, "특수문자, 공백은 허용되지 않습니다", "error", MB_OK);
+	
 }
 
 BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -246,6 +271,9 @@ BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
 		case ID_MOVIE_CANCEL:
 			if (Movietag.size() > 0)
 			{					
@@ -284,8 +312,71 @@ BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 }
 
 extern int port;
+int checkDigit(string in)
+{
+	if (in.length() == 0)
+		return -1;
 
+	regex re("[\\d]+");
+
+	if (regex_match(in, re))
+	{
+		int r; sscanf(in.c_str(), "%d", &r);
+		return r;
+	}
+
+	return -1;
+}
 BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	RECT wrt, crt;
+
+	switch (iMessage) {
+	case WM_INITDIALOG:
+		GetWindowRect(GetParent(hDlg), &wrt);
+		GetWindowRect(hDlg, &crt);
+		SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
+			wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
+		SetDlgItemInt(hDlg, IDC_EDIT_PORT, DEFAULTPORT, FALSE);
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+
+		case ID_OPTION_OK:
+			char value[30];
+			GetDlgItemText(hDlg, IDC_EDIT_PORT, value, sizeof(value));
+			if ((port = checkDigit(value)) != -1)
+			{
+				char reulstmsg[30];
+				sprintf(reulstmsg, "포트 : %d\n설정완료", port);
+				MessageBox(hDlg, reulstmsg, "ok", MB_OK);
+				portFlag = true;
+				updateMenu();
+			}
+			else
+			{
+				char reulstmsg[30];
+				sprintf(reulstmsg, "숫자만 입력가능합니다.\n또한 공백 허용하지 않습니다", port);
+				MessageBox(hDlg, reulstmsg, "ok", MB_OK);
+			}			
+			return TRUE;
+
+		case ID_OPTION_CANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
+
+extern int mincarnumber;
+extern int maxcarnumber;
+BOOL CALLBACK CarOptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	RECT wrt, crt;
 
@@ -299,43 +390,45 @@ BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case ID_OPTION_OK:
-			port = GetDlgItemInt(hDlg, IDC_EDIT_PORT, NULL, FALSE);
-			if (!port)	port = 3333;
-			char buf[30];
-			sprintf(buf, "포트 : %d 설정완료", port);
-			MessageBox(hDlg, buf, "ok", MB_OK);
-			portFlag = true;
+		case IDCANCEL:
 			EndDialog(hDlg, 0);
-			updateMenu();
 			return TRUE;
 
-		case ID_OPTION_CANCEL:
-			EndDialog(hDlg, 0);
-			return TRUE;
+		case ID_CAR_OK:
+			{
+				char value[10];
+				int min, max;
+				GetDlgItemText(hDlg, IDC_EDIT_MIN, value, sizeof(value));
+
+				if ((min = checkDigit(value)) != -1)
+				{
+					GetDlgItemText(hDlg, IDC_EDIT_MAX, value, sizeof(value));
+					if ((max = checkDigit(value)) != -1)
+					{
+						if (min > max)
+							MessageBox(hWndMain,"최소값이 최대값보다 큽니다", "error", MB_OK);
+						else
+						{
+							mincarnumber = min;
+							maxcarnumber = max;
+							MessageBox(hWndMain, "설정 성공", "success", MB_OK);
+						}
+					}
+					else
+						MessageBox(hWndMain, "숫자만 입력가능합니다.", "error", MB_OK);
+				}
+				else
+					MessageBox(hWndMain, "숫자만 입력가능합니다.", "error", MB_OK);
+				return TRUE;
+			}
 		}
-		break;
+		return FALSE;
 	}
 	return FALSE;
 }
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMessage) {
-		//테스트 좌표
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_LEFT:
-			posX -= 5; break;
-		case VK_RIGHT:
-			posX += 5; break;
-		case VK_UP:
-			posY -= 5; break;
-		case VK_DOWN:
-			posY += 5; break;
-		}
-		Update();
-		break;
 	case WM_INITMENU:
 	{
 		updateMenu();
@@ -376,6 +469,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_TOSERVER_CHECK:
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_OPTION), hWnd, OptionProc);
+			break;
+		case ID_TOSERVER_CARSETTINGS:
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_carsettings), hWnd, CarOptionProc);
 			break;
 		}
 		return 0;

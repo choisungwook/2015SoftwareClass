@@ -1,6 +1,10 @@
 #ifndef __ENUM_H__
 #define __ENUM_H__
 
+#define DEFAULTPORT					3333
+#define DEFAULTCARMIN				0
+#define DEFAULTCARMAX				100
+
 #define backgroundImagePath			"img\\background.bmp"
 //емЁн
 #define turnelImagePath				"img\\turnel.bmp"

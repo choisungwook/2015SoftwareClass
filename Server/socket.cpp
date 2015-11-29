@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <regex>
-#define PORT 3333
 using namespace std;
 
 bool _servStatus;
@@ -18,7 +17,6 @@ extern FunctionSet functionset;
 
 SOCKET accept(int servsock);
 extern void token(regex &re, string msg, vector<string> &a);
-extern void DebugFunc(TCHAR *pszErr, ...);
 
 void ErrorHandling(char* message)
 {
@@ -26,10 +24,8 @@ void ErrorHandling(char* message)
 	exit(-1);
 }
 
-////////////////////////////////////////////////
 ////////////////////////////////////////
-//////// WINSOCK 초기화 및 파괴
-////////////////////////////////////////
+//////// WINSOCK init
 void initializeWinsock()
 {
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -40,12 +36,9 @@ void destoryWinsock()
 {
 	WSACleanup();
 }
-////////////////////////////////////////
-//////// 종료
-////////////////////////////////////////
+////////  WINSOCK init end
 
-////////////////////////////////////////
-//////// 서버소켓 
+//////// serversocket
 ////////////////////////////////////////
 SOCKET serverSocket(int port)
 {
@@ -87,7 +80,7 @@ unsigned WINAPI serverWork(void *arg)
 
 	while (true)
 	{
-		//상대방이 소켓을 끊은경우 또는 비정상적인 종료
+		//if socket is closed or socket is disconnected
 		if (recv(clntsock, recvBuf, sizeof(recvBuf), 0) == -1)
 		{
 			_endthreadex(0);
@@ -106,10 +99,10 @@ unsigned WINAPI serverWork(void *arg)
 			tokenBuf.erase(tokenBuf.begin());
 			int result = Func(clntsock, tokenBuf);
 
-			//결과값전송
+			//send to client 
 			sendtoClnt(clntsock, result);			
 		}
-		else //존재하지 않는 명령어일 경우 소켓/쓰레드 종료
+		else //inavlid command
 		{
 			closesocket(clntsock);
 			_endthreadex(0);
@@ -156,7 +149,7 @@ unsigned WINAPI startServer(void *arg)
 	return 0;
 }
 
-//실행중이면 true
+//running is true
 bool statusSevrer()
 {
 	if (_servStatus)
@@ -165,11 +158,8 @@ bool statusSevrer()
 	return false;
 }
 
+
 void StopServer()
 {
 	_servStatus = false;
 }
-
-////////////////////////////////////////
-//////// 종료
-////////////////////////////////////////
