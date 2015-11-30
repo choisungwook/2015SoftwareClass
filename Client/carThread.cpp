@@ -513,7 +513,7 @@ void movetocashier(list<carArgument>::iterator arg)
 
 	arg->direction = 1;
 	arg->posY = collectionXY::nextY;
-	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carhorizon::width, carhorizon::height);
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carhorizon::width, arg->posY + carhorizon::height);
 	
 	//코너 대기
 	move(2, collectionXY::cornerbottomX - carhorizon::width - 10, arg);
@@ -523,7 +523,7 @@ void movetocashier(list<carArgument>::iterator arg)
 	//위로 방향전환
 	//충돌범위 변경	
 	arg->direction = 2;
-	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, carvertical::height);
+	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, arg->posY + carvertical::height);
 	move(1, collectionXY::cashiernearY + 300, arg);
 	
 	ReleaseMutex(M_corner2Wait);

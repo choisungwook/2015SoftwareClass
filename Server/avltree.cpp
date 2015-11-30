@@ -323,6 +323,7 @@ void AVLTree::load(FILE *fp)
 		fread(&readArgument.totalPrice, 1, sizeof(int), fp);
 		fread(&readArgument.visitCount, 1, sizeof(int), fp);
 		fread(&readArgument.totalmovieTime, 1, sizeof(int), fp);
+		
 
 		//최근 방문 날짜
 		int lastvisitlen;
