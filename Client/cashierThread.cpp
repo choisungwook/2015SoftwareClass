@@ -20,6 +20,7 @@ extern HANDLE		T_downCashier;
 Paydata paydata;
 extern Cloud cloud[numOfCloud];
 
+
 void chagneCloud(int index, char *text, bool status)
 {
 	if (status == true)
@@ -50,6 +51,9 @@ unsigned WINAPI cashierThread(void *arg)
 
 		serchDB(sock, paydata.id);
 		int visitresult = recvfromDB(sock);
+
+		char buf[100]; sprintf(buf, "¹ÞÀº°ª %d", visitresult);
+		OutputDebugString(buf);
 
 		if (visitresult == KEY_NOTFOUND)
 		{

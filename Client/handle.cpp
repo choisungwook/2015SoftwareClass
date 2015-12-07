@@ -59,8 +59,8 @@ void initializeHandles()
 }
 
 void initializeSemaphores()
-{
-	T_countingturnel = CreateSemaphore(NULL, numOfturnel, numOfturnel, NULL);
+{	
+	T_countingturnel = CreateSemaphore(NULL, numOfturnel + 1, numOfturnel + 1, NULL);
 	T_waitReader = CreateSemaphore(NULL, 1, 1, NULL);
 	T_hiReader = CreateSemaphore(NULL, 0, 1, NULL);
 	T_selectReader = CreateSemaphore(NULL, 0, 1, NULL);

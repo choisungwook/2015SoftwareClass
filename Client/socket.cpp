@@ -1,6 +1,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #include "socket.h"
+#include "error.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <process.h>
@@ -14,11 +15,8 @@ WSADATA wsaData;
 extern	HWND	hWndMain;
 int port;
 
-void ErrorHandling(char* message)
-{	
-	MessageBox(hWndMain, message, "error", MB_OK);	
-	exit(-1);
-}
+extern void ErrorHandling(char* message);
+
 
 ////////////////////////////////////////
 //////// WINSOCK 초기화 및 파괴
@@ -26,7 +24,7 @@ void ErrorHandling(char* message)
 void initializeWinsock()
 {
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-		ErrorHandling("WSAStartup() error!");
+		ErrorHandling(ERR_WSASTART);
 }
 
 void destoryWinsock()
@@ -43,7 +41,7 @@ SOCKET openDB()
 	hsock = socket(PF_INET, SOCK_STREAM, 0);
 
 	if (hsock == INVALID_SOCKET)
-		ErrorHandling("socket() error");
+		ErrorHandling(ERR_SOCKET);
 
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
@@ -51,7 +49,7 @@ SOCKET openDB()
 	servAddr.sin_port = htons(port);
 
 	if (connect(hsock, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR)
-		ErrorHandling("connect() error!");
+		ErrorHandling(ERR_CONNECT);
 
 	return hsock;
 }
@@ -63,9 +61,12 @@ int recvfromDB(SOCKET hsock)
 	int strLen, r;
 
 	strLen = recv(hsock, message, BUFSIZE - 1, 0);
+	
+	OutputDebugString("받은값 : ");
+	OutputDebugString(message);
 
 	if (strLen == -1)
-		ErrorHandling("read() error!");	
+		ErrorHandling(ERR_READ);
 	
 	sscanf(message, "%d", &r);
 
@@ -77,7 +78,8 @@ void checkExisted(SOCKET hsock, int carID)
 {
 	char sendMessage[BUFSIZE];
 	sprintf(sendMessage, "Check.%d", carID);
-	send(hsock, sendMessage, strlen(sendMessage), 0);
+	if(send(hsock, sendMessage, strlen(sendMessage), 0) < 0)
+		ErrorHandling(ERR_SEARCH);
 }
 
 //업데이트
@@ -94,7 +96,8 @@ void UpdateDB(SOCKET hsock, const char* format, ...)
 	strcat(sendMessage, pharsingBuf);
 	//OutputDebugString(sendMessage);
 
-	send(hsock, sendMessage, strlen(sendMessage), 0);
+	if(send(hsock, sendMessage, strlen(sendMessage), 0) < 0)
+		ErrorHandling(ERR_UPDATE);
 }
 
 //연결종료
@@ -102,7 +105,8 @@ void closeDB(SOCKET hsock)
 {
 	char sendMessage[BUFSIZE];
 	sprintf(sendMessage, "Close");
-	send(hsock, sendMessage, strlen(sendMessage), 0);
+	if(send(hsock, sendMessage, strlen(sendMessage), 0) < 0)
+		ErrorHandling(ERR_CLOSE);
 
 	closesocket(hsock);
 }
@@ -111,5 +115,6 @@ void serchDB(SOCKET hsock,int id)
 {
 	char sendMessage[BUFSIZE];
 	sprintf(sendMessage, "Search.%d",id);
-	send(hsock, sendMessage, strlen(sendMessage), 0);
+	if(send(hsock, sendMessage, strlen(sendMessage), 0) < 0)
+		ErrorHandling(ERR_SEARCH);
 }

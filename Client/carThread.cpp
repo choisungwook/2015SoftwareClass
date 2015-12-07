@@ -53,6 +53,7 @@ extern bool PriorityRightCollision(int carID, RECT *src);
 extern bool isempty(int index);
 extern void initializeCreateBuf();
 extern void releaseCreateBuf(int index);
+extern void updateMenu();
 extern int movieNumber;
 extern Cloud cloud[numOfCloud];
 list<carArgument>::iterator getArgumentaddress(int carID);
@@ -95,7 +96,10 @@ unsigned WINAPI carThread(void *arg)
 	deletecarduplicate(id);
 	
 	if (!L_carArg.size())
+	{
 		MessageBox(hWndMain, "시뮬레이션 종료", "종료", MB_OK);
+		updateMenu();
+	}
 
 	return 0;
 }
@@ -186,16 +190,15 @@ void movetoReader(list<carArgument>::iterator arg)
 	releaseCreateBuf(1);
 	
 	watiAndcheckExited(T_countingturnel);
-
-	move(0, collectionXY::ReadernearX, arg);
 	releaseCreateBuf(0);
-	
+	move(0, collectionXY::ReadernearX, arg);
 }
 
 ////step2
 ////차량인식기앞에서 작업
 void talktoReader(list<carArgument>::iterator arg)
 {
+	
 	watiAndcheckExited(T_waitReader);
 	move(0, collectionXY::ReaderfrontX, arg);
 
@@ -524,7 +527,7 @@ void movetocashier(list<carArgument>::iterator arg)
 	//충돌범위 변경	
 	arg->direction = 2;
 	SetRect(&arg->rect, arg->posX, arg->posY, arg->posX + carvertical::width, arg->posY + carvertical::height);
-	move(1, collectionXY::cashiernearY + 300, arg);
+	move(1, collectionXY::cashiernearY + carvertical::height, arg);
 	
 	ReleaseMutex(M_corner2Wait);
 	move(1, collectionXY::cashiernearY, arg);

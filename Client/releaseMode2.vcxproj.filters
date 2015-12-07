@@ -27,9 +27,6 @@
     <ClCompile Include="handle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fileIO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="readerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,9 +62,6 @@
     <ClInclude Include="utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fileIO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="readerThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,7 +7,7 @@
 
 #define backgroundImagePath			"img\\background.bmp"
 //емЁн
-#define turnelImagePath				"img\\turnel.bmp"
+#define turnelImagePath				"img\\turnel1.bmp"
 //bottom Reader
 #define	carReaderDownImagePath		"img\\parkinggateDown2.bmp"
 #define carReaderUpImagePath		"img\\parkinggateUp2.bmp"
@@ -66,8 +66,10 @@
 #define gotiolet					"img\\gotiolet.bmp"
 #define gostore						"img\\gostore.bmp"
 
+#define DEFAULTSPEED			10
 #define TEXTSPEED				1000
 #define sortOfcar				4
+#define countOfturnel			3
 #define	numOfseat				6
 #define numOfmovie				5
 #define numOfevents				3

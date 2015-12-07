@@ -83,7 +83,6 @@
     <ClCompile Include="carThread.cpp" />
     <ClCompile Include="cashierThread.cpp" />
     <ClCompile Include="collsion.cpp" />
-    <ClCompile Include="fileIO.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="move.cpp" />
@@ -95,7 +94,7 @@
     <ClInclude Include="carThread.h" />
     <ClInclude Include="cashierThread.h" />
     <ClInclude Include="enum.h" />
-    <ClInclude Include="fileIO.h" />
+    <ClInclude Include="error.h" />
     <ClInclude Include="handle.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="readerThread.h" />

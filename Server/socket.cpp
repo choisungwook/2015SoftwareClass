@@ -93,11 +93,15 @@ unsigned WINAPI serverWork(void *arg)
 
 		FunctionSetFinder = functionset.find(tokenBuf[0]);
 
+		//Debug
+		/*char socketToken[1024]; sprintf(socketToken, "%s", tokenBuf);
+		OutputDebugString(socketToken);*/
+
 		if (FunctionSetFinder != functionset.end())
 		{
 			int(*Func)(int, vector<string> &);
 			Func = FunctionSetFinder->second;
-			tokenBuf.erase(tokenBuf.begin());
+			tokenBuf.erase(tokenBuf.begin());			
 			int result = Func(clntsock, tokenBuf);
 
 			//send to client 

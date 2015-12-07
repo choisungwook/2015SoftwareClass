@@ -8,12 +8,19 @@
 #include <map>
 using namespace std;
 
+extern HWND hWndMain;
 //종료플래그
 extern	bool		exitFlag;
 extern	HANDLE		M_accesscarMap;
 //차 고유값 가지고 있는지 체크
 map<int, bool> carmap;
 
+
+void ErrorHandling(char* message)
+{
+	MessageBox(hWndMain, message, "error", MB_OK);
+	exit(-1);
+}
 
 void checkexited()
 {

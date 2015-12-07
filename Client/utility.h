@@ -15,6 +15,9 @@ void watiAndcheckExited(HANDLE hobject);
 void checkexited();
 unsigned int myrand(int max);
 
+//error handling
+void ErrorHandling(char* message);
+
 //차ID중복검사
 bool checkduplication(int carID);
 void initializecarmap();

@@ -4,7 +4,6 @@
 #include "resource.h"
 #include "carThread.h"
 #include "handle.h"
-#include "fileIO.h"
 #include "utility.h"
 #include <list>
 #include <commctrl.h>
@@ -21,6 +20,8 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CarOptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK TURNELProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK SpeedProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 //local 변수
 LPCTSTR			lpszClass = TEXT("3조 소프트웨어설계");
@@ -37,6 +38,8 @@ bool	exitFlag;
 //시작플래그
 bool	movieFlag;
 bool	portFlag;
+//터널플래그
+bool	turnelFlag = true;
 vector<movieTag> Movietag;
 Cloud cloud[numOfCloud];
 
@@ -76,6 +79,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance
 	return (int)Message.wParam;
 }
 
+void DisableMenu()
+{
+	HMENU hMenu = GetMenu(hWndMain);
+	HMENU hMenu1 = GetSubMenu(hMenu, 0);
+	EnableMenuItem((HMENU)hMenu1, ID_FILE_START, MF_BYCOMMAND | MF_GRAYED);
+}
 
 void updateMenu()
 {
@@ -88,6 +97,9 @@ void updateMenu()
 		EnableMenuItem((HMENU)hMenu1, ID_FILE_START, MF_BYCOMMAND | MF_GRAYED);
 	
 }
+
+extern int SPEED;
+//start client
 BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	RECT wrt, crt;
@@ -111,10 +123,26 @@ BOOL CALLBACK DlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			//destorythread();	
 			numOfcar = GetDlgItemInt(hDlg, IDC_EDIT_CAR, NULL, FALSE);
 			numOfturnel = GetDlgItemInt(hDlg, IDC_EDIT_TURNEL, NULL, FALSE);
-			EndDialog(hDlg, IDC_OK);
-			
-			initializeHandles(); //핸들초기화			
-			createThreads(); //쓰레드생성
+			SPEED = GetDlgItemInt(hDlg, IDC_EDIT_SPEED, NULL, FALSE);
+
+			////if SPEED is zero, chage default value
+			if (SPEED == 0)
+				SPEED = DEFAULTSPEED;
+
+			//if numOfturnel is zero, chage default value
+			if (numOfturnel == 0)
+				numOfturnel = countOfturnel;
+
+			if (numOfturnel > 3)
+				MessageBox(hDlg, "터널 카운트가 3를 넘을수 없습니다", "error", MB_OK);
+			else
+			{
+				DisableMenu();
+				EndDialog(hDlg, IDC_OK);
+
+				initializeHandles(); //핸들초기화			
+				createThreads(); //쓰레드생성
+			}			
 			return TRUE;
 
 		case IDC_CANCEL:			
@@ -255,6 +283,77 @@ void inputListview(HWND hDlg)
 	
 }
 
+//change speed
+BOOL CALLBACK SpeedProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	RECT wrt, crt;
+
+	switch (iMessage) {
+	case WM_INITDIALOG:
+		GetWindowRect(GetParent(hDlg), &wrt);
+		GetWindowRect(hDlg, &crt);
+		SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
+			wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		case ID_SPEEK_OK:
+			{
+				int editspeed = GetDlgItemInt(hDlg, IDC_EDIT_CSPEED, NULL, FALSE);
+				if (editspeed == 0)
+					MessageBox(hDlg, "0은 입력할수 없습니다", "error", MB_OK);
+				else
+				{
+					SPEED = editspeed;
+					MessageBox(hDlg, "속도변경 성공", "error", MB_OK);
+				}
+				return TRUE;
+			}				
+		}
+		break;
+	}
+	return FALSE;
+}
+
+//turnel options
+BOOL CALLBACK TURNELProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	RECT wrt, crt;
+
+	switch (iMessage) {
+	case WM_INITDIALOG:
+	{
+		GetWindowRect(GetParent(hDlg), &wrt);
+		GetWindowRect(hDlg, &crt);
+		SetWindowPos(hDlg, HWND_NOTOPMOST, wrt.left + (wrt.right - wrt.left) / 2 - (crt.right - crt.left) / 2,
+			wrt.top + (wrt.bottom - wrt.top) / 2 - (crt.bottom - crt.top) / 2, 0, 0, SWP_NOSIZE);
+		return TRUE;
+	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			return TRUE;
+		case IDC_BTN_TURNEL_ON:
+			turnelFlag = true;
+			Update();
+			return TRUE;
+		case IDC_BTN_TURNEL_OFF:
+			turnelFlag = false;
+			Update();
+			return TRUE; 
+		}
+		break;
+	}
+	return FALSE;
+}
+
+//input movie dialog
 BOOL CALLBACK MovieProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	RECT wrt, crt;
@@ -328,6 +427,8 @@ int checkDigit(string in)
 
 	return -1;
 }
+
+//port Dialog
 BOOL CALLBACK OptionProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
 	RECT wrt, crt;
@@ -474,6 +575,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		case ID_TOSERVER_CARSETTINGS:
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_carsettings), hWnd, CarOptionProc);
 			break;
+		case ID_TOOLS_TURNEL: //enable turnel
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_TURNEL), hWnd, TURNELProc);
+			break;
+		case ID_TOOLS_SPEED:
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_SPEED), hWnd, SpeedProc);
+			break;
 		}
 		return 0;
 	case WM_PAINT:
@@ -510,6 +617,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 //차인자
 extern list<carArgument>		L_carArg;
 extern list<Person*>			L_personArg;
+
+
 
 //뮤택스
 extern	HANDLE					M_accessArg;
@@ -640,7 +749,8 @@ void Update()
 	ReleaseMutex(M_accessArg);
 		
 	//터널그리기
-	drawOnMemory(turnelImagePath, BitDC, MemDC, 125, 670, 2);
+	if (turnelFlag)
+		drawOnMemory(turnelImagePath, BitDC, MemDC, 125, 670, 2);
 
 	//다리 그리기
 	drawOnMemory(BridgeImagePath, BitDC, MemDC, 145, 245, 2);

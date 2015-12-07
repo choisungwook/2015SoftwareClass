@@ -72,7 +72,7 @@ int UpdateDB(int hsock, vector<string> &data)
 int SearchDB(int hsock, vector<string> &data)
 {
 	AVLNODE *updateNode = car.search(stoi(data[0]));
-
+		
 	if (updateNode == NULL)
 		return KEY_NOTFOUND;
 

@@ -8,6 +8,7 @@
 #define MOVESTEP 10
 using namespace std;
 
+int SPEED;
 bool createbuf[5];
 extern HANDLE	M_accessCreate;
 
@@ -28,10 +29,10 @@ void moveLeft(int dst, list<carArgument>::iterator car)
 		if (!PriorityLeftCollision(car->id, &car->rect))
 		{			
 			car->posX -= MOVESTEP;
-			SetRect(&car->rect, car->posX, car->posY, car->posX + carhorizon::width, car->posY + carhorizon::height);
+			SetRect(&car->rect, car->posX - MOVESTEP, car->posY, car->posX + carhorizon::width, car->posY + carhorizon::height);
 			Update();
 		}		
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 	}	
 }
 
@@ -42,10 +43,10 @@ void moveUp(int dst, list<carArgument>::iterator car)
 		if (!PriorityTopCollision(car->id, &car->rect))
 		{
 			car->posY -= MOVESTEP;
-			SetRect(&car->rect, car->posX, car->posY, car->posX + carvertical::width, car->posY + carvertical::height);
+			SetRect(&car->rect, car->posX, car->posY - MOVESTEP, car->posX + carvertical::width, car->posY + carvertical::height);
 			Update();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 	}
 }
 
@@ -56,10 +57,10 @@ void moveRight(int dst, list<carArgument>::iterator car)
 		if (!PriorityRightCollision(car->id, &car->rect))
 		{
 			car->posX += MOVESTEP;
-			SetRect(&car->rect, car->posX, car->posY, car->posX + carhorizon::width, car->posY + carhorizon::height);
+			SetRect(&car->rect, car->posX + MOVESTEP, car->posY, car->posX + carhorizon::width, car->posY + carhorizon::height);
 			Update();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 	}
 }
 
@@ -70,10 +71,10 @@ void moveDown(int dst, list<carArgument>::iterator car)
 		if (!PriorityDownCollision(car->id, &car->rect))
 		{
 			car->posY += MOVESTEP;
-			SetRect(&car->rect, car->posX, car->posY, car->posX + carvertical::width, car->posY + carvertical::height);
+			SetRect(&car->rect, car->posX, car->posY + MOVESTEP, car->posX + carvertical::width, car->posY + carvertical::height);
 			Update();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 	}
 }
 
@@ -109,7 +110,7 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 				checkexited();
 				(*arg)->posX = (*arg)->posX - 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 			}
 		}
 		else
@@ -120,7 +121,7 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 				checkexited();
 				(*arg)->posX = (*arg)->posX + 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 			}
 		}
 	}
@@ -134,7 +135,7 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 				checkexited();
 				(*arg)->posY = (*arg)->posY - 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 			}
 		}
 		else
@@ -145,7 +146,7 @@ void movecharacter(list<Person*>::iterator arg, int dst,int mode)
 				checkexited();
 				(*arg)->posY = (*arg)->posY + 5;
 				Update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(SPEED));
 			}
 		}
 	}
