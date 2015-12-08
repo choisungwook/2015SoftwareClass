@@ -622,6 +622,7 @@ extern list<Person*>			L_personArg;
 
 //뮤택스
 extern	HANDLE					M_accessArg;
+extern	HANDLE					M_accessHuman;
 //상단 직원 차량인식기
 extern	bool topUpReader;
 //하단 차량인식기
@@ -756,9 +757,10 @@ void Update()
 	drawOnMemory(BridgeImagePath, BitDC, MemDC, 145, 245, 2);
 
 	//사람그리기
+	watiAndcheckExited(M_accessHuman);
 	list<Person*>::iterator personEnd = L_personArg.end();
 	for (list<Person*>::iterator iterPos = L_personArg.begin(); iterPos != personEnd; iterPos++)
-	{
+	{		
 		if ((*iterPos)->character == 1) //쵸파
 		{
 			if ((*iterPos)->direction == 1)
@@ -805,6 +807,7 @@ void Update()
 				drawOnMemory(character4frontimagePath, BitDC, MemDC, (*iterPos)->posX, (*iterPos)->posY, 2);
 		}
 	}
+	ReleaseMutex(M_accessHuman);
 
 	//종료
 	DeleteDC(MemDC);

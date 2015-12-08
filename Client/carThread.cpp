@@ -30,6 +30,7 @@ extern	HANDLE			M_corner2Wait;
 extern	HANDLE			M_accessArg;
 extern	HANDLE			M_accessSeat;
 extern	HANDLE			M_accessCollsion;
+extern	HANDLE			M_accessHuman;
 //세마포어 핸들
 extern	HANDLE			T_countingturnel;
 extern	HANDLE			T_waitReader;
@@ -197,8 +198,7 @@ void movetoReader(list<carArgument>::iterator arg)
 ////step2
 ////차량인식기앞에서 작업
 void talktoReader(list<carArgument>::iterator arg)
-{
-	
+{	
 	watiAndcheckExited(T_waitReader);
 	move(0, collectionXY::ReaderfrontX, arg);
 
@@ -341,6 +341,9 @@ list<carArgument>::iterator getArgumentaddress(int carID)
 {
 	list<carArgument>::iterator r;
 
+	//동기화
+	watiAndcheckExited(M_accessArg);
+
 	list<carArgument>::iterator end = L_carArg.end();
 
 	for (list<carArgument>::iterator iterPos = L_carArg.begin(); iterPos != end; iterPos++)
@@ -351,11 +354,11 @@ list<carArgument>::iterator getArgumentaddress(int carID)
 			break;
 		}
 	}
+	//동기화
 	ReleaseMutex(M_accessArg);
 	return r;
 
 }
-
 
 int destination[numOfseat][2] =
 {
@@ -365,21 +368,24 @@ int destination[numOfseat][2] =
 	{ collectionXYofChar::onlandcreatX3, collectionXYofChar::onbridgeX3 },
 	{ collectionXYofChar::onlandcreatX4, collectionXYofChar::onbridgeX4 },
 	{ collectionXYofChar::onlandcreatX5, collectionXYofChar::onbridgeX5 },
-	//{ collectionXYofChar::onlandcreatX5, 225 },
 };
 
 Person* createcharacter(int id, int pos)
 {	
 	int sortOfchar = myrand(numOfchar);
 	Person* newPerson = new Person(id, destination[pos][0], sortOfchar);
+	watiAndcheckExited(M_accessHuman);
 	L_personArg.push_back(newPerson);
+	ReleaseMutex(M_accessHuman);
 
 	return newPerson;
 }
 
 void deletecharacter(Person* p)
 {
+	watiAndcheckExited(M_accessHuman);
 	L_personArg.remove(p);
+	ReleaseMutex(M_accessHuman);
 }
 
 list<Person*>::iterator getaddressPerson(int id)
@@ -388,6 +394,7 @@ list<Person*>::iterator getaddressPerson(int id)
 
 	list<Person*>::iterator end = L_personArg.end();
 
+	watiAndcheckExited(M_accessHuman);
 	for (list<Person*>::iterator iterPos = L_personArg.begin(); iterPos != end; iterPos++)
 	{
 		if ((*iterPos)->id == id)
@@ -396,7 +403,7 @@ list<Person*>::iterator getaddressPerson(int id)
 			break;
 		}
 	}
-	ReleaseMutex(M_accessArg);
+	ReleaseMutex(M_accessHuman);
 	return r;
 }
 

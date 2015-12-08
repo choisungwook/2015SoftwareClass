@@ -32,6 +32,7 @@ HANDLE		M_accessSeat;
 HANDLE		M_accessCollsion;
 HANDLE		M_accesscarMap;
 HANDLE		M_accessCreate;
+HANDLE		M_accessHuman;
 
 //코너 뮤텍스
 HANDLE		M_corner1Wait;
@@ -81,6 +82,7 @@ void initializeMutexs()
 	M_accessCreate = CreateMutex(NULL, FALSE, NULL);
 	M_corner1Wait = CreateMutex(NULL, FALSE, NULL);
 	M_corner2Wait = CreateMutex(NULL, FALSE, NULL);
+	M_accessHuman = CreateMutex(NULL, FALSE, NULL);
 }
 
 //파괴와 관련된 함수들
@@ -124,6 +126,7 @@ void destoryMutexs()
 	CloseHandle(M_accessCreate);
 	CloseHandle(M_corner1Wait);
 	CloseHandle(M_corner2Wait);
+	CloseHandle(M_accessHuman);
 }
 
 void destoryHandles()
@@ -151,5 +154,5 @@ void AllActivateHandles()
 	ReleaseMutex(M_accessCreate);
 	ReleaseMutex(M_corner1Wait);
 	ReleaseMutex(M_corner2Wait);
-
+	ReleaseMutex(M_accessHuman);
 }
